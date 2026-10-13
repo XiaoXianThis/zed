@@ -38,7 +38,7 @@
     // "calt": false
   },
   // The default font size for text in the editor
-  "buffer_font_size": 15,
+  "buffer_font_size": 13,
   // The weight of the editor font in standard CSS units from 100 to 900.
   "buffer_font_weight": 400,
   // Set the buffer's line height.
@@ -1457,7 +1457,7 @@
     // Whether or not to show the tab bar in the editor
     "show": true,
     // Whether or not to show the navigation history buttons.
-    "show_nav_history_buttons": true,
+    "show_nav_history_buttons": false,
     // Whether or not to show the tab bar buttons.
     "show_tab_bar_buttons": true,
     // Whether or not to show pinned tabs in a separate row.
