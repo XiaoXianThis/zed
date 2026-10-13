@@ -115,6 +115,7 @@ git config rerere.enabled true
 | 5 | `crates/workspace/src/dock.rs` → `Dock::activity_item`（新增方法） | 由面板生成图标栏条目（图标、选中态、切换动作） | fork(ui): 新增竖排图标栏 crate | 人工判断 | 已实施 |
 | 5 | `crates/workspace/src/workspace.rs` → `Workspace::render_activity_strip`（新增）、`Workspace::render` 中 `bottom_dock_layout` 外层包裹左右图标栏 | 挂载左右竖排图标栏 | fork(ui): 新增竖排图标栏 crate | 人工判断 | 已实施 |
 | 5 | `Cargo.toml`（workspace members/依赖）、`crates/workspace/Cargo.toml` | 注册 `fork_ui` | fork(ui): 新增竖排图标栏 crate | fork | 已实施 |
+| 5 | `crates/workspace/src/dock.rs` → `Dock` 面板渲染中 `border_color`（`colors().border.opacity(0.3)`） | 面板之间的分割线淡化 | fork(ui): fade dock panel dividers | 人工判断 | 已实施 |
 | 5 | `crates/ui/src/traits/styled_ext.rs` 的 `rounded_lg` 等 | 圆角统一 | 待定 | 人工判断 | 待核实 |
 | 4 | `assets/icons/*.svg`、`crates/icons/src/icons.rs` | 图标风格 | 待定 | fork | 待实施 |
 
