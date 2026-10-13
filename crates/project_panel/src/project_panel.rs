@@ -26,7 +26,7 @@ use gpui::{
     MouseButton, MouseDownEvent, MouseExitEvent, ParentElement, PathPromptOptions, Pixels, Point,
     PromptLevel, Render, ScrollStrategy, Stateful, Styled, Subscription, Task,
     UniformListScrollHandle, WeakEntity, Window, actions, anchored, deferred, div, hsla,
-    linear_color_stop, linear_gradient, point, px, size, transparent_white, uniform_list,
+    linear_color_stop, linear_gradient, point, px, rems, size, transparent_white, uniform_list,
 };
 use itertools::Itertools;
 use language::DiagnosticSeverity;
@@ -644,7 +644,6 @@ struct ItemColors {
     hover: Hsla,
     drag_over: Hsla,
     marked: Hsla,
-    focused: Hsla,
 }
 
 fn get_item_color(is_sticky: bool, cx: &App) -> ItemColors {
@@ -662,7 +661,6 @@ fn get_item_color(is_sticky: bool, cx: &App) -> ItemColors {
             colors.element_hover
         },
         marked: colors.element_selected,
-        focused: colors.panel_focused_border,
         drag_over: colors.drop_target_background,
     }
 }
@@ -5968,13 +5966,13 @@ impl ProjectPanel {
         let depth = details.depth;
         let worktree_id = details.worktree_id;
 
-        let bg_color = if is_marked {
+        let bg_color = if is_marked || is_active {
             item_colors.marked
         } else {
             item_colors.default
         };
 
-        let bg_hover_color = if is_marked {
+        let bg_hover_color = if is_marked || is_active {
             item_colors.marked
         } else {
             item_colors.hover
@@ -5997,22 +5995,14 @@ impl ProjectPanel {
 
         let show_focused_border = !self.mouse_down && is_active && self.contains_focus(window, cx);
 
-        let border_color = if show_focused_border {
-            match validation_color_and_message {
-                Some((color, _)) => color,
-                None => item_colors.focused,
-            }
-        } else {
-            bg_color
+        let border_color = match validation_color_and_message {
+            Some((color, _)) if show_focused_border => color,
+            _ => bg_color,
         };
 
-        let border_hover_color = if show_focused_border {
-            match validation_color_and_message {
-                Some((color, _)) => color,
-                None => item_colors.focused,
-            }
-        } else {
-            bg_hover_color
+        let border_hover_color = match validation_color_and_message {
+            Some((color, _)) if show_focused_border => color,
+            _ => bg_hover_color,
         };
 
         let folded_directory_drag_target = self.folded_directory_drag_target;
@@ -6615,6 +6605,7 @@ impl ProjectPanel {
 
                                 None => this.child(
                                     Label::new(file_name)
+                                        .size(LabelSize::Custom(rems(0.875)))
                                         .single_line()
                                         .color(filename_text_color)
                                         .when(
@@ -6786,6 +6777,7 @@ impl ProjectPanel {
                         )
                         .child(
                             Label::new(component)
+                                .size(LabelSize::Custom(rems(0.875)))
                                 .single_line()
                                 .color(filename_text_color)
                                 .when(bold_folder_labels && !is_file, |this| {
@@ -6872,6 +6864,7 @@ impl ProjectPanel {
             })
             .child(
                 Label::new(delimiter.clone())
+                    .size(LabelSize::Custom(rems(0.875)))
                     .single_line()
                     .color(filename_text_color),
             )
