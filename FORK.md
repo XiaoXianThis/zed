@@ -127,6 +127,9 @@ git config rerere.enabled true
 | 4 | `crates/fork_status_bar/`（新 crate：`IndentIndicator` 缩进指示器）、`Cargo.toml`（workspace members/依赖）、`crates/zed/Cargo.toml` | 底栏右侧显示缩进（Spaces/Tabs 与宽度） | fork(ui): add indentation indicator to status bar | fork | 已实施 |
 | 5 | `crates/zed/src/zed.rs` → 状态栏 `indent_indicator` 注册（放在 `edit_prediction_ui` 之前） | 挂载缩进指示器 | fork(ui): add indentation indicator to status bar | 人工判断 | 已实施 |
 | 5 | `crates/workspace/src/workspace.rs` → `Workspace::render_activity_strip` 中 `side == Left` 分支追加 `extensions` 条目（`IconName::Blocks`，动作 `zed_actions::Extensions`） | 左侧图标栏新增插件市场按钮，点击打开 Extensions 面板 | fork(ui): add extensions button to left activity strip | 人工判断 | 已实施 |
+| 3 | `assets/settings/default.json` → `buffer_font_size`（15 改为 13） | 编辑器字体默认调小 | fork(settings): smaller editor font and hide nav history buttons | fork | 已实施 |
+| 3 | `assets/settings/default.json` → `tab_bar.show_nav_history_buttons`（改为 false） | 隐藏编辑窗口的前进/后退箭头 | fork(settings): smaller editor font and hide nav history buttons | fork | 已实施 |
+| 6 | `crates/project_panel/src/project_panel.rs` → `render_entry` 中文件名与路径分隔符的 `Label`（`LabelSize::Custom(rems(0.875))`）；`get_item_color` 移除 `focused`；`render_entry` 中 `bg_color`/`bg_hover_color` 对选中项使用 `marked` 背景色，`border_color`/`border_hover_color` 不再对选中项绘制 outline（仅保留校验错误颜色） | 文件面板字体略小；选中项由 outline 改为背景变色 | fork(project_panel): smaller font and background selection | 人工判断 | 已实施 |
 
 ### 待确认事项（实施前需要核实）
 - 面板默认显隐：当前逻辑由 `crates/workspace/src/dock.rs` 中序列化的 `visible` 状态决定，是否可以只通过默认设置控制首次启动的显隐，还需要进一步验证。
