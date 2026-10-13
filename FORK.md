@@ -126,6 +126,7 @@ git config rerere.enabled true
 | 3 | `assets/settings/default.json` → `status_bar.show_active_file`（true）、`line_endings_button`（true）、`active_encoding_button`（enabled） | 底栏左侧显示当前文件路径，右侧显示行尾符与编码 | fork(settings): status bar shows path, line ending and encoding | fork | 已实施 |
 | 4 | `crates/fork_status_bar/`（新 crate：`IndentIndicator` 缩进指示器）、`Cargo.toml`（workspace members/依赖）、`crates/zed/Cargo.toml` | 底栏右侧显示缩进（Spaces/Tabs 与宽度） | fork(ui): add indentation indicator to status bar | fork | 已实施 |
 | 5 | `crates/zed/src/zed.rs` → 状态栏 `indent_indicator` 注册（放在 `edit_prediction_ui` 之前） | 挂载缩进指示器 | fork(ui): add indentation indicator to status bar | 人工判断 | 已实施 |
+| 5 | `crates/workspace/src/workspace.rs` → `Workspace::render_activity_strip` 中 `side == Left` 分支追加 `extensions` 条目（`IconName::Blocks`，动作 `zed_actions::Extensions`） | 左侧图标栏新增插件市场按钮，点击打开 Extensions 面板 | fork(ui): add extensions button to left activity strip | 人工判断 | 已实施 |
 
 ### 待确认事项（实施前需要核实）
 - 面板默认显隐：当前逻辑由 `crates/workspace/src/dock.rs` 中序列化的 `visible` 状态决定，是否可以只通过默认设置控制首次启动的显隐，还需要进一步验证。

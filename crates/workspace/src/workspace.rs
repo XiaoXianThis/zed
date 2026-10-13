@@ -8651,6 +8651,15 @@ impl Workspace {
                 .find_map(|dock| dock.read(cx).activity_item(slot, window, cx))
         });
         let mut extra_top = Vec::new();
+        if side == fork_ui::StripSide::Left {
+            extra_top.push(fork_ui::ActivityItem {
+                id: "extensions".into(),
+                icon: IconName::Blocks,
+                tooltip: "Extensions".into(),
+                selected: false,
+                action: Box::new(zed_actions::Extensions::default()),
+            });
+        }
         if side == fork_ui::StripSide::Right {
             extra_top.push(fork_ui::ActivityItem {
                 id: "search".into(),
