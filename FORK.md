@@ -116,6 +116,9 @@ git config rerere.enabled true
 | 5 | `crates/workspace/src/workspace.rs` → `Workspace::render_activity_strip`（新增）、`Workspace::render` 中 `bottom_dock_layout` 外层包裹左右图标栏 | 挂载左右竖排图标栏 | fork(ui): 新增竖排图标栏 crate | 人工判断 | 已实施 |
 | 5 | `Cargo.toml`（workspace members/依赖）、`crates/workspace/Cargo.toml` | 注册 `fork_ui` | fork(ui): 新增竖排图标栏 crate | fork | 已实施 |
 | 5 | `crates/workspace/src/dock.rs` → `Dock` 面板渲染中 `border_color`（`colors().border.opacity(0.3)`） | 面板之间的分割线淡化 | fork(ui): fade dock panel dividers | 人工判断 | 已实施 |
+| 5 | `crates/workspace/src/multi_workspace.rs` → `MultiWorkspace::render` 中左右图标栏挂到最外层（Threads 侧栏在右图标栏左侧） | 图标栏贴边 | fork(ui): move activity strips to window edges | 人工判断 | 已实施 |
+| 5 | `crates/workspace/src/status_bar.rs` → `StatusBar::add_strip_item` / `strip_item_views`、`SidebarStatus::query` 的 `show_toggle`（false） | 诊断指示器移入右侧图标栏；隐藏状态栏右下角 Threads 展开按钮 | fork(ui): move activity strips to window edges | 人工判断 | 已实施 |
+| 5 | `crates/zed/src/zed.rs` → 删除 `search_button` 的状态栏注册，诊断指示器改用 `add_strip_item` | 去掉左下角搜索按钮 | fork(ui): move activity strips to window edges | 人工判断 | 已实施 |
 | 5 | `crates/ui/src/traits/styled_ext.rs` 的 `rounded_lg` 等 | 圆角统一 | 待定 | 人工判断 | 待核实 |
 | 4 | `assets/icons/*.svg`、`crates/icons/src/icons.rs` | 图标风格 | 待定 | fork | 待实施 |
 
