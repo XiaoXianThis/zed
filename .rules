@@ -1,3 +1,15 @@
+# Fork rules (read first)
+
+This repo is a fork of `zed-industries/zed` that is restyled toward a Cursor-like look and carries its own features. The full rules live in `FORK.md`; read it before any change to code, config, assets, or merges. The hard rules are:
+
+* Place fork-owned logic in new `crates/fork_*` crates. This overrides the "prefer existing files" guideline below for fork code only.
+* Change defaults by editing values, not structure, in `assets/settings/default.json`. Never reorder keys or rewrite sections.
+* Do not replace built-in themes. Put fork themes under `assets/themes/fork-cursor/`.
+* Keep edits to upstream core files (`workspace`, `title_bar`, `ui`, `theme`, `icons`, and everything else in the upstream core) minimal. Do not reformat or rename upstream symbols, and do not run repo-wide `cargo fmt`.
+* Every fork change must be listed in the ledger in `FORK.md` (section 七) and committed with a `fork(<area>): <summary>` prefix. Keep fork changes in separate commits per area.
+* When merging upstream: sync from release tags, merge rather than rebase into `fork/main`, and resolve conflicts using the "who wins" table in `FORK.md` section 五. Ask the user when the table says human judgment is required.
+* Do not edit git config or the `upstream` remote on the user's behalf unless asked.
+
 # Rust coding guidelines
 
 * Prioritize code correctness and clarity. Speed and efficiency are secondary priorities unless otherwise specified.
