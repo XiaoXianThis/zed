@@ -8635,36 +8635,27 @@ impl Workspace {
             )
     }
 
-    fn render_activity_strip(
-        &self,
-        side: fork_ui::StripSide,
-        window: &Window,
-        cx: &App,
-    ) -> fork_ui::ActivityStrip {
-        let docks = [&self.left_dock, &self.bottom_dock, &self.right_dock];
-        let panel_item = |name: &str| {
+    fn render_activity_strip(&self, side: fork_ui::StripSide) -> fork_ui::ActivityStrip {
+        let docks = [
+            self.left_dock.clone(),
+            self.bottom_dock.clone(),
+            self.right_dock.clone(),
+        ];
+        let panel_item: fork_ui::PanelItemLookup = Box::new(move |name, window, cx| {
             docks
                 .iter()
                 .find_map(|dock| dock.read(cx).activity_item(name, window, cx))
-        };
-        let (top_names, bottom_names) = fork_ui::panel_names(side);
-        let mut top: Vec<_> = top_names
-            .iter()
-            .filter_map(|name| panel_item(name))
-            .collect();
-        let bottom: Vec<_> = bottom_names
-            .iter()
-            .filter_map(|name| panel_item(name))
-            .collect();
+        });
+        let mut extra_top = Vec::new();
         if side == fork_ui::StripSide::Right {
-            top.push(fork_ui::ActivityItem {
+            extra_top.push(fork_ui::ActivityItem {
                 id: "search".into(),
                 icon: IconName::MagnifyingGlass,
                 tooltip: "Search".into(),
                 selected: false,
                 action: Box::new(DeploySearch::default()),
             });
-            top.push(fork_ui::ActivityItem {
+            extra_top.push(fork_ui::ActivityItem {
                 id: "threads-sidebar".into(),
                 icon: IconName::ThreadsSidebarRightClosed,
                 tooltip: "Threads Sidebar".into(),
@@ -8672,7 +8663,7 @@ impl Workspace {
                 action: Box::new(ToggleWorkspaceSidebar),
             });
         }
-        fork_ui::ActivityStrip::new(side, top, bottom)
+        fork_ui::ActivityStrip::new(side, panel_item, extra_top)
     }
 
     fn render_dock(
@@ -9597,9 +9588,8 @@ impl Render for Workspace {
             log::info!("Rendered first frame");
         }
 
-        let left_activity_strip = self.render_activity_strip(fork_ui::StripSide::Left, window, cx);
-        let right_activity_strip =
-            self.render_activity_strip(fork_ui::StripSide::Right, window, cx);
+        let left_activity_strip = self.render_activity_strip(fork_ui::StripSide::Left);
+        let right_activity_strip = self.render_activity_strip(fork_ui::StripSide::Right);
         let pad_center_pane = self.centered_layout
             && self.center.panes().len() == 1
             && self.active_item(cx).is_some();

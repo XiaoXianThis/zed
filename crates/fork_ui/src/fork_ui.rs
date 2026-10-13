@@ -27,21 +27,37 @@ pub struct ActivityItem {
     pub action: Box<dyn Action>,
 }
 
+pub type PanelItemLookup = Box<dyn Fn(&str, &Window, &App) -> Option<ActivityItem>>;
+
 #[derive(IntoElement)]
 pub struct ActivityStrip {
     side: StripSide,
-    top: Vec<ActivityItem>,
-    bottom: Vec<ActivityItem>,
+    panel_item: PanelItemLookup,
+    extra_top: Vec<ActivityItem>,
 }
 
 impl ActivityStrip {
-    pub fn new(side: StripSide, top: Vec<ActivityItem>, bottom: Vec<ActivityItem>) -> Self {
-        Self { side, top, bottom }
+    pub fn new(side: StripSide, panel_item: PanelItemLookup, extra_top: Vec<ActivityItem>) -> Self {
+        Self {
+            side,
+            panel_item,
+            extra_top,
+        }
     }
 }
 
 impl RenderOnce for ActivityStrip {
-    fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
+    fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
+        let (top_names, bottom_names) = panel_names(self.side);
+        let top: Vec<_> = top_names
+            .iter()
+            .filter_map(|name| (self.panel_item)(name, window, cx))
+            .chain(self.extra_top)
+            .collect();
+        let bottom: Vec<_> = bottom_names
+            .iter()
+            .filter_map(|name| (self.panel_item)(name, window, cx))
+            .collect();
         v_flex()
             .h_full()
             .w(px(40.))
@@ -59,13 +75,13 @@ impl RenderOnce for ActivityStrip {
                 v_flex()
                     .gap_1()
                     .items_center()
-                    .children(self.top.into_iter().map(render_item)),
+                    .children(top.into_iter().map(render_item)),
             )
             .child(
                 v_flex()
                     .gap_1()
                     .items_center()
-                    .children(self.bottom.into_iter().map(render_item)),
+                    .children(bottom.into_iter().map(render_item)),
             )
     }
 }
