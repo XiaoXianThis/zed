@@ -536,6 +536,28 @@ impl Dock {
             .position(|entry| entry.panel.persistent_name() == ui_name)
     }
 
+    pub fn activity_item(
+        &self,
+        persistent_name: &str,
+        window: &Window,
+        cx: &App,
+    ) -> Option<fork_ui::ActivityItem> {
+        let index = self.panel_index_for_persistent_name(persistent_name, cx)?;
+        let panel = self.panel_entries.get(index)?.panel.clone();
+        let selected = Some(index) == self.active_panel_index && self.is_open;
+        Some(fork_ui::ActivityItem {
+            id: persistent_name.into(),
+            icon: panel.icon(window, cx)?,
+            tooltip: panel.icon_tooltip(window, cx)?.into(),
+            selected,
+            action: if selected {
+                self.toggle_action()
+            } else {
+                panel.toggle_action(window, cx)
+            },
+        })
+    }
+
     pub fn panel_index_for_proto_id(&self, panel_id: PanelId) -> Option<usize> {
         self.panel_entries
             .iter()

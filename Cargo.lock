@@ -6669,6 +6669,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "fork_ui"
+version = "0.1.0"
+dependencies = [
+ "gpui",
+ "ui",
+]
+
+[[package]]
 name = "form_urlencoded"
 version = "1.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -22274,6 +22282,7 @@ dependencies = [
  "component",
  "db",
  "dirs",
+ "fork_ui",
  "fs",
  "futures 0.3.34",
  "futures-lite 2.6.1",

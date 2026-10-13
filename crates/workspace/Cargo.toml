@@ -38,6 +38,7 @@ component.workspace = true
 db.workspace = true
 dirs.workspace = true
 futures-lite.workspace = true
+fork_ui.workspace = true
 fs.workspace = true
 futures.workspace = true
 git.workspace = true

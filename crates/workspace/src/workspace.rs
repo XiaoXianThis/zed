@@ -8635,6 +8635,46 @@ impl Workspace {
             )
     }
 
+    fn render_activity_strip(
+        &self,
+        side: fork_ui::StripSide,
+        window: &Window,
+        cx: &App,
+    ) -> fork_ui::ActivityStrip {
+        let docks = [&self.left_dock, &self.bottom_dock, &self.right_dock];
+        let panel_item = |name: &str| {
+            docks
+                .iter()
+                .find_map(|dock| dock.read(cx).activity_item(name, window, cx))
+        };
+        let (top_names, bottom_names) = fork_ui::panel_names(side);
+        let mut top: Vec<_> = top_names
+            .iter()
+            .filter_map(|name| panel_item(name))
+            .collect();
+        let bottom: Vec<_> = bottom_names
+            .iter()
+            .filter_map(|name| panel_item(name))
+            .collect();
+        if side == fork_ui::StripSide::Right {
+            top.push(fork_ui::ActivityItem {
+                id: "search".into(),
+                icon: IconName::MagnifyingGlass,
+                tooltip: "Search".into(),
+                selected: false,
+                action: Box::new(DeploySearch::default()),
+            });
+            top.push(fork_ui::ActivityItem {
+                id: "threads-sidebar".into(),
+                icon: IconName::ThreadsSidebarRightClosed,
+                tooltip: "Threads Sidebar".into(),
+                selected: false,
+                action: Box::new(ToggleWorkspaceSidebar),
+            });
+        }
+        fork_ui::ActivityStrip::new(side, top, bottom)
+    }
+
     fn render_dock(
         &self,
         position: DockPosition,
@@ -9557,6 +9597,9 @@ impl Render for Workspace {
             log::info!("Rendered first frame");
         }
 
+        let left_activity_strip = self.render_activity_strip(fork_ui::StripSide::Left, window, cx);
+        let right_activity_strip =
+            self.render_activity_strip(fork_ui::StripSide::Right, window, cx);
         let pad_center_pane = self.centered_layout
             && self.center.panes().len() == 1
             && self.active_item(cx).is_some();
@@ -9760,8 +9803,14 @@ impl Render for Workspace {
                                     },
                                 ))
                             })
-                            .child({
-                                match bottom_dock_layout {
+                            .child(
+                                div()
+                                    .flex()
+                                    .flex_row()
+                                    .size_full()
+                                    .child(left_activity_strip)
+                                    .child(div().flex_1().overflow_hidden().child({
+                                        match bottom_dock_layout {
                                     BottomDockLayout::Full => div()
                                         .flex()
                                         .flex_col()
@@ -10001,7 +10050,9 @@ impl Render for Workspace {
                                             cx,
                                         )),
                                 }
-                            })
+                                    }))
+                                    .child(right_activity_strip),
+                            )
                             .children(self.zoomed.as_ref().and_then(|view| {
                                 let zoomed_view = view.upgrade()?;
                                 let zoomed_element = match zoomed_paddings {
