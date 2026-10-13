@@ -140,8 +140,15 @@ git config rerere.enabled true
 | 5 | `crates/workspace/src/multi_workspace.rs` → `MultiWorkspace::render`：根容器由 `h_flex` 改为 `v_flex`；左右图标栏、侧栏与主区域包入新 `h_flex`；状态栏改为在根容器底部渲染（`status_bar` 变量） | 状态栏贯穿窗口底部，位于图标栏之下 | fork(ui): render status bar across window bottom | 人工判断 | 已实施 |
 | 5 | `crates/workspace/src/workspace.rs` → `Workspace::render` 删除主区域的 `border_t_1`/`border_b_1`/`border_color`，删除内部 `status_bar` 的 `when(status_bar_visible)` 渲染 | 状态栏改由 `MultiWorkspace` 渲染，去掉主区域上下分割线 | fork(ui): render status bar across window bottom | 人工判断 | 已实施 |
 | 6 | `crates/project_panel/src/project_panel.rs` → `render_entry` 中文件名与路径分隔符的 `Label`（`LabelSize::Custom(rems(0.875))`）；`get_item_color` 移除 `focused`；`render_entry` 中 `bg_color`/`bg_hover_color` 对选中项使用 `marked` 背景色，`border_color`/`border_hover_color` 不再对选中项绘制 outline（仅保留校验错误颜色） | 文件面板字体略小；选中项由 outline 改为背景变色 | fork(project_panel): smaller font and background selection | 人工判断 | 已实施 |
+| 3 | `assets/settings/default.json` → `agent_ui_font_size`（14）、`agent_buffer_font_size`（14）、`agent_buffer_font_family`（`.ZedSans`） | Agent 面板正文与用户消息字号、无衬线字体对齐 Cursor | fork(settings): agent panel font sizes | fork | 已实施 |
+| 4 | `crates/fork_ui/src/fork_ui.rs` → 新增 `agent_panel_background`、`agent_tab_strip`、`agent_thread_tab`、`agent_composer_frame` 等 Cursor 样式 token | 集中 Agent 面板颜色与形状，减少分散修改 | fork(ui): restyle agent panel to match Cursor | fork | 已实施 |
+| 5 | `crates/agent_ui/src/agent_panel.rs` → 新增 `AgentPanel::render_thread_tabs`；`render_toolbar` 中会话视图的标题位替换为线程标签；工具栏高度、背景、边框改用 fork token | 面板顶部由 title 改为会话 tab 切换 | fork(ui): restyle agent panel to match Cursor | 人工判断 | 已实施 |
+| 5 | `crates/agent_ui/src/conversation_view/thread_view.rs` → `render_message_editor`（输入框外层改用 `agent_composer_frame`，空状态贴底）、`render_entry`（用户消息 12px 圆角与底色）、`render_thinking_block`（去掉图标与左侧竖线）、`tool_card_border_color` | 输入框、用户消息、思考块、工具卡片边框对齐 Cursor | fork(ui): restyle agent panel to match Cursor | 人工判断 | 已实施 |
+| 5 | `crates/agent_ui/src/message_editor.rs` → `MessageEditor::render` 编辑器背景改为 `transparent_black` | 输入框底色由外层框提供 | fork(ui): restyle agent panel to match Cursor | 人工判断 | 已实施 |
+| 5 | `crates/agent_ui/Cargo.toml` 增加 `fork_ui` 依赖（`Cargo.lock` 同步） | 引入样式 token | fork(ui): restyle agent panel to match Cursor | fork | 已实施 |
 
 ### 待确认事项（实施前需要核实）
+- Agent 面板未完全还原：工具调用行（非卡片形式）、助手消息正文、模式/模型胶囊按钮、消息底部操作区尚未逐项对照 Cursor 调整；需要在有已连接 Agent 的会话中做一次像素级对比。
 - 面板默认显隐：当前逻辑由 `crates/workspace/src/dock.rs` 中序列化的 `visible` 状态决定，是否可以只通过默认设置控制首次启动的显隐，还需要进一步验证。
 - 圆角：`rounded_lg` 等来自 gpui 的样式方法，是否有统一配置入口需要确认；如果没有，只能逐个组件修改，冲突风险较高。
 - 按钮位置：状态栏和标题栏的按钮布局代码分别位于 `crates/workspace/src/status_bar.rs` 和 `crates/title_bar/src/title_bar.rs`，具体改动方式需要在实施前阅读。
