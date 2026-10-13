@@ -890,7 +890,7 @@
     //   "chevron"
     // 3. A disclosure chevron followed by a folder icon:
     //   "both"
-    "folder_indicator": "icon",
+    "folder_indicator": "chevron",
     // Whether to show the git status in the project panel.
     "git_status": true,
     // Amount of indentation for nested items.
@@ -947,7 +947,7 @@
       //    "always"
       // 2. Never show indent guides:
       //    "never"
-      "show": "always",
+      "show": "never",
     },
     // Sort order for entries in the project panel.
     // This setting can take three values:
