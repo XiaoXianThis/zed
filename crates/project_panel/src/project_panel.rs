@@ -6408,18 +6408,17 @@ impl ProjectPanel {
                             });
                             return;
                         }
-                        if event.modifiers().alt {
+                        if event.click_count() <= 1 {
+                            project_panel.selection = Some(selection);
+                        } else if event.modifiers().alt {
                             project_panel.toggle_expand_all(entry_id, window, cx);
                         } else {
                             project_panel.toggle_expanded(entry_id, window, cx);
                         }
+                    } else if event.click_count() > 1 {
+                        project_panel.open_entry(entry_id, true, false, cx);
                     } else {
-                        let preview_tabs_enabled =
-                            PreviewTabsSettings::get_global(cx).enable_preview_from_project_panel;
-                        let click_count = event.click_count();
-                        let focus_opened_item = click_count > 1;
-                        let allow_preview = preview_tabs_enabled && click_count == 1;
-                        project_panel.open_entry(entry_id, focus_opened_item, allow_preview, cx);
+                        project_panel.selection = Some(selection);
                     }
                 }),
             )

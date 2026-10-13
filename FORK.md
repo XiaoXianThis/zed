@@ -117,6 +117,7 @@ git config rerere.enabled true
 | 5 | `Cargo.toml`（workspace members/依赖）、`crates/workspace/Cargo.toml` | 注册 `fork_ui` | fork(ui): 新增竖排图标栏 crate | fork | 已实施 |
 | 5 | `crates/workspace/src/dock.rs` → `Dock` 面板渲染中 `border_color`（`colors().border.opacity(0.3)`） | 面板之间的分割线淡化 | fork(ui): fade dock panel dividers | 人工判断 | 已实施 |
 | 3 | `assets/settings/default.json` → `project_panel.folder_indicator`（改为 `chevron`）、`project_panel.indent_guides.show`（改为 `never`） | 文件夹左侧显示展开箭头（展开后为 v），去掉文件夹展开竖线 | fork(settings): project panel chevron without indent guides | fork | 已实施 |
+| 6 | `crates/project_panel/src/project_panel.rs` → `render_entry` 的 `on_click` | 单击只选中，双击展开/收起文件夹并双击打开文件（上游核心逻辑，改动仅限点击分支） | fork(project_panel): double click to expand folders and open files | 人工判断 | 已实施 |
 | 5 | `crates/workspace/src/multi_workspace.rs` → `MultiWorkspace::render` 中左右图标栏挂到最外层（Threads 侧栏在右图标栏左侧） | 图标栏贴边 | fork(ui): move activity strips to window edges | 人工判断 | 已实施 |
 | 5 | `crates/workspace/src/status_bar.rs` → `StatusBar::add_strip_item` / `strip_item_views`、`SidebarStatus::query` 的 `show_toggle`（false） | 诊断指示器移入右侧图标栏；隐藏状态栏右下角 Threads 展开按钮 | fork(ui): move activity strips to window edges | 人工判断 | 已实施 |
 | 5 | `crates/zed/src/zed.rs` → 删除 `search_button` 的状态栏注册，诊断指示器改用 `add_strip_item` | 去掉左下角搜索按钮 | fork(ui): move activity strips to window edges | 人工判断 | 已实施 |
