@@ -90,7 +90,7 @@ impl SidebarStatus {
                     open: mw.sidebar_open() && enabled,
                     side: mw.sidebar_side(cx),
                     has_notifications: mw.sidebar_has_notifications(cx),
-                    show_toggle: enabled,
+                    show_toggle: false,
                 }
             })
             .unwrap_or_default()
@@ -100,6 +100,7 @@ impl SidebarStatus {
 pub struct StatusBar {
     left_items: Vec<Box<dyn StatusItemViewHandle>>,
     right_items: Vec<Box<dyn StatusItemViewHandle>>,
+    strip_items: Vec<Box<dyn StatusItemViewHandle>>,
     active_pane: Entity<Pane>,
     multi_workspace: Option<WeakEntity<MultiWorkspace>>,
     focus_handle: FocusHandle,
@@ -333,6 +334,7 @@ impl StatusBar {
         let mut this = Self {
             left_items: Default::default(),
             right_items: Default::default(),
+            strip_items: Default::default(),
             active_pane: active_pane.clone(),
             multi_workspace,
             focus_handle: cx.focus_handle(),
@@ -362,6 +364,25 @@ impl StatusBar {
 
         self.left_items.push(Box::new(item));
         cx.notify();
+    }
+
+    pub fn add_strip_item<T>(
+        &mut self,
+        item: Entity<T>,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) where
+        T: 'static + StatusItemView,
+    {
+        let active_pane_item = self.active_pane.read(cx).active_item();
+        item.set_active_pane_item(active_pane_item.as_deref(), window, cx);
+
+        self.strip_items.push(Box::new(item));
+        cx.notify();
+    }
+
+    pub fn strip_item_views(&self) -> Vec<AnyView> {
+        self.strip_items.iter().map(|item| item.to_any()).collect()
     }
 
     pub fn item_of_type<T: StatusItemView>(&self) -> Option<Entity<T>> {
@@ -448,7 +469,12 @@ impl StatusBar {
 
     fn update_active_pane_item(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         let active_pane_item = self.active_pane.read(cx).active_item();
-        for item in self.left_items.iter().chain(&self.right_items) {
+        for item in self
+            .left_items
+            .iter()
+            .chain(&self.right_items)
+            .chain(&self.strip_items)
+        {
             item.set_active_pane_item(active_pane_item.as_deref(), window, cx);
         }
     }

@@ -1,4 +1,4 @@
-use gpui::{Action, App, SharedString, Window, prelude::*};
+use gpui::{Action, AnyView, App, SharedString, Window, prelude::*};
 use ui::{Tooltip, prelude::*};
 
 pub struct PanelSlot {
@@ -75,6 +75,7 @@ pub struct ActivityStrip {
     side: StripSide,
     panel_item: PanelItemLookup,
     extra_top: Vec<ActivityItem>,
+    footer: Vec<AnyView>,
 }
 
 impl ActivityStrip {
@@ -83,7 +84,13 @@ impl ActivityStrip {
             side,
             panel_item,
             extra_top,
+            footer: Vec::new(),
         }
+    }
+
+    pub fn with_footer(mut self, footer: Vec<AnyView>) -> Self {
+        self.footer = footer;
+        self
     }
 }
 
@@ -106,7 +113,7 @@ impl RenderOnce for ActivityStrip {
             .py_2()
             .justify_between()
             .items_center()
-            .bg(cx.theme().colors().editor_background)
+            .bg(cx.theme().colors().title_bar_background)
             .child(
                 v_flex()
                     .gap_3()
@@ -117,7 +124,8 @@ impl RenderOnce for ActivityStrip {
                 v_flex()
                     .gap_3()
                     .items_center()
-                    .children(bottom.into_iter().map(render_item)),
+                    .children(bottom.into_iter().map(render_item))
+                    .children(self.footer),
             )
     }
 }

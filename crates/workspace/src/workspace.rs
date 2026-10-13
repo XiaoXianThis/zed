@@ -8635,7 +8635,11 @@ impl Workspace {
             )
     }
 
-    fn render_activity_strip(&self, side: fork_ui::StripSide) -> fork_ui::ActivityStrip {
+    pub(crate) fn render_activity_strip(
+        &self,
+        side: fork_ui::StripSide,
+        cx: &App,
+    ) -> fork_ui::ActivityStrip {
         let docks = [
             self.left_dock.clone(),
             self.bottom_dock.clone(),
@@ -8663,7 +8667,12 @@ impl Workspace {
                 action: Box::new(ToggleWorkspaceSidebar),
             });
         }
-        fork_ui::ActivityStrip::new(side, panel_item, extra_top)
+        let strip = fork_ui::ActivityStrip::new(side, panel_item, extra_top);
+        if side == fork_ui::StripSide::Right {
+            strip.with_footer(self.status_bar.read(cx).strip_item_views())
+        } else {
+            strip
+        }
     }
 
     fn render_dock(
@@ -9588,8 +9597,6 @@ impl Render for Workspace {
             log::info!("Rendered first frame");
         }
 
-        let left_activity_strip = self.render_activity_strip(fork_ui::StripSide::Left);
-        let right_activity_strip = self.render_activity_strip(fork_ui::StripSide::Right);
         let pad_center_pane = self.centered_layout
             && self.center.panes().len() == 1
             && self.active_item(cx).is_some();
@@ -9793,14 +9800,8 @@ impl Render for Workspace {
                                     },
                                 ))
                             })
-                            .child(
-                                div()
-                                    .flex()
-                                    .flex_row()
-                                    .size_full()
-                                    .child(left_activity_strip)
-                                    .child(div().flex_1().overflow_hidden().child({
-                                        match bottom_dock_layout {
+                            .child({
+                                match bottom_dock_layout {
                                     BottomDockLayout::Full => div()
                                         .flex()
                                         .flex_col()
@@ -10040,9 +10041,7 @@ impl Render for Workspace {
                                             cx,
                                         )),
                                 }
-                                    }))
-                                    .child(right_activity_strip),
-                            )
+                            })
                             .children(self.zoomed.as_ref().and_then(|view| {
                                 let zoomed_view = view.upgrade()?;
                                 let zoomed_element = match zoomed_paddings {
