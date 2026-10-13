@@ -538,17 +538,17 @@ impl Dock {
 
     pub fn activity_item(
         &self,
-        persistent_name: &str,
+        slot: &fork_ui::PanelSlot,
         window: &Window,
         cx: &App,
     ) -> Option<fork_ui::ActivityItem> {
-        let index = self.panel_index_for_persistent_name(persistent_name, cx)?;
+        let index = self.panel_index_for_persistent_name(slot.persistent_name, cx)?;
         let panel = self.panel_entries.get(index)?.panel.clone();
         let selected = Some(index) == self.active_panel_index && self.is_open;
         Some(fork_ui::ActivityItem {
-            id: persistent_name.into(),
-            icon: panel.icon(window, cx)?,
-            tooltip: panel.icon_tooltip(window, cx)?.into(),
+            id: slot.persistent_name.into(),
+            icon: slot.icon,
+            tooltip: slot.tooltip.into(),
             selected,
             action: if selected {
                 self.toggle_action()

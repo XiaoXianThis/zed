@@ -1,10 +1,51 @@
 use gpui::{Action, App, SharedString, Window, prelude::*};
 use ui::{Tooltip, prelude::*};
 
-pub const LEFT_TOP_PANELS: [&str; 4] =
-    ["Project Panel", "GitPanel", "CollabPanel", "Outline Panel"];
-pub const LEFT_BOTTOM_PANELS: [&str; 2] = ["TerminalPanel", "DebugPanel"];
-pub const RIGHT_TOP_PANELS: [&str; 1] = ["AgentPanel"];
+pub struct PanelSlot {
+    pub persistent_name: &'static str,
+    pub icon: IconName,
+    pub tooltip: &'static str,
+}
+
+const LEFT_TOP_PANELS: [PanelSlot; 4] = [
+    PanelSlot {
+        persistent_name: "Project Panel",
+        icon: IconName::FileTree,
+        tooltip: "Project Panel",
+    },
+    PanelSlot {
+        persistent_name: "GitPanel",
+        icon: IconName::GitBranch,
+        tooltip: "Git Panel",
+    },
+    PanelSlot {
+        persistent_name: "CollabPanel",
+        icon: IconName::UserGroup,
+        tooltip: "Collab Panel",
+    },
+    PanelSlot {
+        persistent_name: "Outline Panel",
+        icon: IconName::ListTree,
+        tooltip: "Outline Panel",
+    },
+];
+const LEFT_BOTTOM_PANELS: [PanelSlot; 2] = [
+    PanelSlot {
+        persistent_name: "TerminalPanel",
+        icon: IconName::TerminalAlt,
+        tooltip: "Terminal Panel",
+    },
+    PanelSlot {
+        persistent_name: "DebugPanel",
+        icon: IconName::Debug,
+        tooltip: "Debug Panel",
+    },
+];
+const RIGHT_TOP_PANELS: [PanelSlot; 1] = [PanelSlot {
+    persistent_name: "AgentPanel",
+    icon: IconName::ZedAssistant,
+    tooltip: "Agent Panel",
+}];
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum StripSide {
@@ -12,7 +53,7 @@ pub enum StripSide {
     Right,
 }
 
-pub fn panel_names(side: StripSide) -> (&'static [&'static str], &'static [&'static str]) {
+pub fn panel_slots(side: StripSide) -> (&'static [PanelSlot], &'static [PanelSlot]) {
     match side {
         StripSide::Left => (&LEFT_TOP_PANELS, &LEFT_BOTTOM_PANELS),
         StripSide::Right => (&RIGHT_TOP_PANELS, &[]),
@@ -27,7 +68,7 @@ pub struct ActivityItem {
     pub action: Box<dyn Action>,
 }
 
-pub type PanelItemLookup = Box<dyn Fn(&str, &Window, &App) -> Option<ActivityItem>>;
+pub type PanelItemLookup = Box<dyn Fn(&PanelSlot, &Window, &App) -> Option<ActivityItem>>;
 
 #[derive(IntoElement)]
 pub struct ActivityStrip {
@@ -48,15 +89,15 @@ impl ActivityStrip {
 
 impl RenderOnce for ActivityStrip {
     fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
-        let (top_names, bottom_names) = panel_names(self.side);
-        let top: Vec<_> = top_names
+        let (top_slots, bottom_slots) = panel_slots(self.side);
+        let top: Vec<_> = top_slots
             .iter()
-            .filter_map(|name| (self.panel_item)(name, window, cx))
+            .filter_map(|slot| (self.panel_item)(slot, window, cx))
             .chain(self.extra_top)
             .collect();
-        let bottom: Vec<_> = bottom_names
+        let bottom: Vec<_> = bottom_slots
             .iter()
-            .filter_map(|name| (self.panel_item)(name, window, cx))
+            .filter_map(|slot| (self.panel_item)(slot, window, cx))
             .collect();
         v_flex()
             .h_full()

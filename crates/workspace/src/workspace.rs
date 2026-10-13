@@ -8641,10 +8641,10 @@ impl Workspace {
             self.bottom_dock.clone(),
             self.right_dock.clone(),
         ];
-        let panel_item: fork_ui::PanelItemLookup = Box::new(move |name, window, cx| {
+        let panel_item: fork_ui::PanelItemLookup = Box::new(move |slot, window, cx| {
             docks
                 .iter()
-                .find_map(|dock| dock.read(cx).activity_item(name, window, cx))
+                .find_map(|dock| dock.read(cx).activity_item(slot, window, cx))
         });
         let mut extra_top = Vec::new();
         if side == fork_ui::StripSide::Right {
