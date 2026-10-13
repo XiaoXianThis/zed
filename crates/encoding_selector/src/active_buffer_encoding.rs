@@ -60,9 +60,7 @@ impl ActiveBufferEncoding {
 
 impl Render for ActiveBufferEncoding {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
-        let Some(active_encoding) = self.active_encoding else {
-            return div().hidden();
-        };
+        let active_encoding = self.active_encoding.unwrap_or(UTF_8);
 
         let display_option = StatusBarSettings::get_global(cx).active_encoding_button;
         let is_utf8 = active_encoding == UTF_8;

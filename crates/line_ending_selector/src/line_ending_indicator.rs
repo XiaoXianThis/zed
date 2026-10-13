@@ -36,19 +36,18 @@ impl Render for LineEndingIndicator {
             return div();
         }
 
-        div().when_some(self.line_ending.as_ref(), |el, line_ending| {
-            el.child(
-                Button::new("change-line-ending", line_ending.label())
-                    .label_size(LabelSize::Small)
-                    .tab_index(0isize)
-                    .on_click(cx.listener(|this, _, window, cx| {
-                        if let Some(editor) = this.active_editor.as_ref() {
-                            LineEndingSelector::toggle(editor, window, cx);
-                        }
-                    }))
-                    .tooltip(|_window, cx| Tooltip::for_action("Select Line Ending", &Toggle, cx)),
-            )
-        })
+        let line_ending = self.line_ending.unwrap_or_default();
+        div().child(
+            Button::new("change-line-ending", line_ending.label())
+                .label_size(LabelSize::Small)
+                .tab_index(0isize)
+                .on_click(cx.listener(|this, _, window, cx| {
+                    if let Some(editor) = this.active_editor.as_ref() {
+                        LineEndingSelector::toggle(editor, window, cx);
+                    }
+                }))
+                .tooltip(|_window, cx| Tooltip::for_action("Select Line Ending", &Toggle, cx)),
+        )
     }
 }
 
