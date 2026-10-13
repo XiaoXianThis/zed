@@ -2172,7 +2172,8 @@ impl Render for MultiWorkspace {
                 .child(
                     self.workspace()
                         .read(cx)
-                        .render_activity_strip(fork_ui::StripSide::Left, cx),
+                        .render_activity_strip(fork_ui::StripSide::Left, cx)
+                        .with_top_inset(ui::utils::platform_title_bar_height(window)),
                 )
                 .children(left_sidebar)
                 .child(
@@ -2187,7 +2188,8 @@ impl Render for MultiWorkspace {
                 .child(
                     self.workspace()
                         .read(cx)
-                        .render_activity_strip(fork_ui::StripSide::Right, cx),
+                        .render_activity_strip(fork_ui::StripSide::Right, cx)
+                        .with_top_inset(ui::utils::platform_title_bar_height(window)),
                 )
                 .child(self.workspace().read(cx).modal_layer.clone())
                 .children(self.sidebar_overlay.as_ref().map(|view| {

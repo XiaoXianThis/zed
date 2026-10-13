@@ -1,4 +1,4 @@
-use gpui::{Action, AnyView, App, SharedString, Window, prelude::*};
+use gpui::{Action, AnyView, App, Pixels, SharedString, Window, prelude::*};
 use ui::{Tooltip, prelude::*};
 
 pub struct PanelSlot {
@@ -70,12 +70,17 @@ pub struct ActivityItem {
 
 pub type PanelItemLookup = Box<dyn Fn(&PanelSlot, &Window, &App) -> Option<ActivityItem>>;
 
+pub fn strip_width() -> Pixels {
+    px(36.)
+}
+
 #[derive(IntoElement)]
 pub struct ActivityStrip {
     side: StripSide,
     panel_item: PanelItemLookup,
     extra_top: Vec<ActivityItem>,
     footer: Vec<AnyView>,
+    top_inset: Pixels,
 }
 
 impl ActivityStrip {
@@ -85,11 +90,17 @@ impl ActivityStrip {
             panel_item,
             extra_top,
             footer: Vec::new(),
+            top_inset: px(0.),
         }
     }
 
     pub fn with_footer(mut self, footer: Vec<AnyView>) -> Self {
         self.footer = footer;
+        self
+    }
+
+    pub fn with_top_inset(mut self, top_inset: Pixels) -> Self {
+        self.top_inset = top_inset;
         self
     }
 }
@@ -108,9 +119,10 @@ impl RenderOnce for ActivityStrip {
             .collect();
         v_flex()
             .h_full()
-            .w(px(36.))
+            .w(strip_width())
             .flex_none()
-            .py_2()
+            .pt(self.top_inset + px(8.))
+            .pb_2()
             .justify_between()
             .items_center()
             .bg(cx.theme().colors().title_bar_background)
