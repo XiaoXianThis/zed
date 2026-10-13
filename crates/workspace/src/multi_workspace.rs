@@ -2070,7 +2070,12 @@ impl Render for MultiWorkspace {
 
         let workspace = self.workspace().clone();
         let workspace_key_context = workspace.update(cx, |workspace, cx| workspace.key_context(cx));
-        let root = workspace.update(cx, |workspace, cx| workspace.actions(h_flex(), window, cx));
+        let root = workspace.update(cx, |workspace, cx| workspace.actions(v_flex(), window, cx));
+        let status_bar = self
+            .workspace()
+            .read(cx)
+            .status_bar_visible(cx)
+            .then(|| self.workspace().read(cx).status_bar().clone());
 
         client_side_decorations(
             root.key_context(workspace_key_context)
@@ -2170,27 +2175,34 @@ impl Render for MultiWorkspace {
                     },
                 )
                 .child(
-                    self.workspace()
-                        .read(cx)
-                        .render_activity_strip(fork_ui::StripSide::Left, cx)
-                        .with_top_inset(ui::utils::platform_title_bar_height(window)),
-                )
-                .children(left_sidebar)
-                .child(
-                    div()
-                        .flex()
+                    h_flex()
                         .flex_1()
+                        .min_h_0()
                         .size_full()
-                        .overflow_hidden()
-                        .child(self.workspace().clone()),
+                        .child(
+                            self.workspace()
+                                .read(cx)
+                                .render_activity_strip(fork_ui::StripSide::Left, cx)
+                                .with_top_inset(ui::utils::platform_title_bar_height(window)),
+                        )
+                        .children(left_sidebar)
+                        .child(
+                            div()
+                                .flex()
+                                .flex_1()
+                                .size_full()
+                                .overflow_hidden()
+                                .child(self.workspace().clone()),
+                        )
+                        .children(right_sidebar)
+                        .child(
+                            self.workspace()
+                                .read(cx)
+                                .render_activity_strip(fork_ui::StripSide::Right, cx)
+                                .with_top_inset(ui::utils::platform_title_bar_height(window)),
+                        ),
                 )
-                .children(right_sidebar)
-                .child(
-                    self.workspace()
-                        .read(cx)
-                        .render_activity_strip(fork_ui::StripSide::Right, cx)
-                        .with_top_inset(ui::utils::platform_title_bar_height(window)),
-                )
+                .children(status_bar)
                 .child(self.workspace().read(cx).modal_layer.clone())
                 .children(self.sidebar_overlay.as_ref().map(|view| {
                     deferred(div().absolute().size_full().inset_0().occlude().child(
