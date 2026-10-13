@@ -101,26 +101,21 @@ impl RenderOnce for ActivityStrip {
             .collect();
         v_flex()
             .h_full()
-            .w(px(40.))
+            .w(px(36.))
             .flex_none()
-            .py_1()
+            .py_2()
             .justify_between()
             .items_center()
-            .bg(cx.theme().colors().panel_background)
-            .border_color(cx.theme().colors().border)
-            .map(|this| match self.side {
-                StripSide::Left => this.border_r_1(),
-                StripSide::Right => this.border_l_1(),
-            })
+            .bg(cx.theme().colors().editor_background)
             .child(
                 v_flex()
-                    .gap_1()
+                    .gap_3()
                     .items_center()
                     .children(top.into_iter().map(render_item)),
             )
             .child(
                 v_flex()
-                    .gap_1()
+                    .gap_3()
                     .items_center()
                     .children(bottom.into_iter().map(render_item)),
             )
@@ -129,9 +124,14 @@ impl RenderOnce for ActivityStrip {
 
 fn render_item(item: ActivityItem) -> impl IntoElement {
     let action = item.action;
+    let color = if item.selected {
+        Color::Accent
+    } else {
+        Color::Muted
+    };
     IconButton::new(item.id, item.icon)
         .icon_size(IconSize::Small)
-        .toggle_state(item.selected)
+        .icon_color(color)
         .tooltip(Tooltip::text(item.tooltip))
         .on_click(move |_, window, cx| window.dispatch_action(action.boxed_clone(), cx))
 }
