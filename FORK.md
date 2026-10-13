@@ -131,7 +131,13 @@ git config rerere.enabled true
 | 3 | `assets/settings/default.json` → `tab_bar.show_nav_history_buttons`（改为 false） | 隐藏编辑窗口的前进/后退箭头 | fork(settings): smaller editor font and hide nav history buttons | fork | 已实施 |
 | 6 | `crates/encoding_selector/src/active_buffer_encoding.rs` → `ActiveBufferEncoding::render`（无活动编辑器时按 `UTF_8` 显示，不再隐藏） | 无文件时底栏仍显示编码 | fork(ui): keep status bar info visible without an open file | 人工判断 | 已实施 |
 | 6 | `crates/line_ending_selector/src/line_ending_indicator.rs` → `LineEndingIndicator::render`（无活动编辑器时按 `LineEnding::default()` 显示） | 无文件时底栏仍显示行尾符 | fork(ui): keep status bar info visible without an open file | 人工判断 | 已实施 |
-| 4 | `crates/fork_status_bar/src/fork_status_bar.rs` → `IndentIndicator::render`（无活动编辑器时用全局默认缩进）、`ActiveFilePath::render`（无路径时显示 "—"） | 无文件时底栏仍显示缩进与路径占位 | 待定（该文件有未提交改动，暂未提交） | fork | 已实施，待提交 |
+| 4 | `crates/fork_status_bar/src/fork_status_bar.rs` → `IndentIndicator::render`（无活动编辑器时用全局默认缩进）、`ActiveFilePath::render`（无路径时显示 "—"） | 无文件时底栏仍显示缩进与路径占位 | fork(ui): show file icon and breadcrumb path in status bar | fork | 已实施 |
+| 4 | `crates/fork_status_bar/src/fork_status_bar.rs` → 新增 `ActiveFilePath`（分段路径、文件图标、悬停显示完整路径），`crates/fork_status_bar/Cargo.toml` 增加 `file_icons`、`project`、`settings` 依赖 | 底栏左侧路径带文件图标与分段样式 | fork(ui): show file icon and breadcrumb path in status bar | fork | 已实施 |
+| 5 | `crates/zed/src/zed.rs` → `initialize_workspace` 中 `active_file_name` 改为 `fork_status_bar::ActiveFilePath::new(workspace)` | 底栏路径组件替换为 fork 版本 | fork(ui): show file icon and breadcrumb path in status bar | 人工判断 | 已实施 |
+| 4 | `crates/fork_ui/src/fork_ui.rs` → 新增 `settings_button()`，`crates/fork_ui/Cargo.toml` 增加 `zed_actions` 依赖 | 设置按钮组件（派发 `OpenSettings`） | fork(ui): add settings button to title bar | fork | 已实施 |
+| 5 | `crates/title_bar/src/title_bar.rs` → `TitleBar::render` 右侧 `user_menu` 之后追加 `fork_ui::settings_button()`；`crates/title_bar/Cargo.toml` 增加 `fork_ui` 依赖 | 标题栏右侧增加设置入口 | fork(ui): add settings button to title bar | 人工判断 | 已实施 |
+| 5 | `crates/workspace/src/multi_workspace.rs` → `MultiWorkspace::render`：根容器由 `h_flex` 改为 `v_flex`；左右图标栏、侧栏与主区域包入新 `h_flex`；状态栏改为在根容器底部渲染（`status_bar` 变量） | 状态栏贯穿窗口底部，位于图标栏之下 | fork(ui): render status bar across window bottom | 人工判断 | 已实施 |
+| 5 | `crates/workspace/src/workspace.rs` → `Workspace::render` 删除主区域的 `border_t_1`/`border_b_1`/`border_color`，删除内部 `status_bar` 的 `when(status_bar_visible)` 渲染 | 状态栏改由 `MultiWorkspace` 渲染，去掉主区域上下分割线 | fork(ui): render status bar across window bottom | 人工判断 | 已实施 |
 | 6 | `crates/project_panel/src/project_panel.rs` → `render_entry` 中文件名与路径分隔符的 `Label`（`LabelSize::Custom(rems(0.875))`）；`get_item_color` 移除 `focused`；`render_entry` 中 `bg_color`/`bg_hover_color` 对选中项使用 `marked` 背景色，`border_color`/`border_hover_color` 不再对选中项绘制 outline（仅保留校验错误颜色） | 文件面板字体略小；选中项由 outline 改为背景变色 | fork(project_panel): smaller font and background selection | 人工判断 | 已实施 |
 
 ### 待确认事项（实施前需要核实）
