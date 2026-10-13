@@ -94,7 +94,7 @@ use text::OffsetRangeExt;
 use theme_settings::ThemeSettings;
 use ui::{
     ContextMenu, ContextMenuEntry, GradientFade, IconButton, KeyBinding, PopoverMenu,
-    PopoverMenuHandle, ProjectEmptyState, Tab, Tooltip, prelude::*, utils::WithRemSize,
+    PopoverMenuHandle, ProjectEmptyState, Tooltip, prelude::*, utils::WithRemSize,
 };
 use util::ResultExt as _;
 use workspace::{
@@ -5837,6 +5837,60 @@ impl AgentPanel {
         })
     }
 
+    fn render_thread_tabs(&self, window: &mut Window, cx: &mut Context<Self>) -> AnyElement {
+        let Some(active_view) = self.active_conversation_view().cloned() else {
+            return div().into_any_element();
+        };
+        let active_thread_id = active_view.read(cx).thread_id;
+        let mut tabs: Vec<(ThreadId, Entity<ConversationView>)> = self
+            .retained_threads
+            .iter()
+            .map(|(thread_id, conversation_view)| (*thread_id, conversation_view.clone()))
+            .collect();
+        tabs.push((active_thread_id, active_view));
+        if let Some(store) = ThreadMetadataStore::try_global(cx) {
+            let store = store.read(cx);
+            tabs.sort_by_key(|(thread_id, _)| {
+                store
+                    .entry(*thread_id)
+                    .and_then(|metadata| metadata.created_at)
+            });
+        }
+
+        let mut children = Vec::with_capacity(tabs.len());
+        for (thread_id, conversation_view) in tabs {
+            let selected = thread_id == active_thread_id;
+            let label = if selected && self.active_thread_has_messages(cx) {
+                self.render_title_view(window, cx)
+            } else {
+                Label::new(conversation_view.read(cx).title(cx))
+                    .color(if selected {
+                        Color::Default
+                    } else {
+                        Color::Muted
+                    })
+                    .truncate()
+                    .into_any_element()
+            };
+            children.push(
+                fork_ui::agent_thread_tab(
+                    SharedString::from(format!("agent-thread-tab-{thread_id:?}")),
+                    selected,
+                )
+                .child(label)
+                .when(!selected, |this| {
+                    this.on_click(cx.listener(move |this, _, window, cx| {
+                        this.activate_retained_thread(thread_id, true, window, cx);
+                    }))
+                })
+                .into_any_element(),
+            );
+        }
+        fork_ui::agent_tab_strip()
+            .children(children)
+            .into_any_element()
+    }
+
     fn render_toolbar(&self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let agent_server_store = self.project.read(cx).agent_server_store().clone();
 
@@ -6182,10 +6236,16 @@ impl AgentPanel {
                         .gap(DynamicSpacing::Base04.rems(cx))
                         .pl(DynamicSpacing::Base04.rems(cx))
                         .child(selected_agent.into_any_element())
-                        .child(match empty_thread_title {
-                            Some(title) => title,
-                            None => self.render_title_view(window, cx),
-                        }),
+                        .child(
+                            if matches!(self.visible_surface(), VisibleSurface::AgentThread(_)) {
+                                self.render_thread_tabs(window, cx)
+                            } else {
+                                match empty_thread_title {
+                                    Some(title) => title,
+                                    None => self.render_title_view(window, cx),
+                                }
+                            },
+                        ),
                 )
                 .child(
                     h_flex()
@@ -6203,12 +6263,12 @@ impl AgentPanel {
 
         h_flex()
             .id("agent-panel-toolbar")
-            .h(Tab::container_height(cx))
+            .h(fork_ui::agent_tab_strip_height())
             .flex_shrink_0()
             .max_w_full()
-            .bg(cx.theme().colors().tab_bar_background)
+            .bg(fork_ui::agent_panel_background())
             .border_b_1()
-            .border_color(cx.theme().colors().border)
+            .border_color(fork_ui::agent_tab_separator())
             .child(toolbar_content)
     }
 
@@ -6506,7 +6566,7 @@ impl Render for AgentPanel {
             .size_full()
             .justify_between()
             .track_focus(&self.focus_handle)
-            .bg(cx.theme().colors().panel_background)
+            .bg(fork_ui::agent_panel_background())
             .on_action(cx.listener(|this, action: &NewThread, window, cx| {
                 this.new_thread(action, window, cx);
             }))

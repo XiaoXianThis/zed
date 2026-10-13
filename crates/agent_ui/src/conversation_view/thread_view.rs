@@ -4592,7 +4592,7 @@ impl ThreadView {
         }
 
         let focus_handle = self.message_editor.focus_handle(cx);
-        let editor_bg_color = cx.theme().colors().editor_background;
+        let editor_bg_color = fork_ui::agent_panel_background();
 
         let editor_expanded = self.editor_expanded;
         let (expand_icon, expand_tooltip) = if editor_expanded {
@@ -4603,7 +4603,7 @@ impl ThreadView {
 
         let max_content_width = AgentSettings::get_global(cx).max_content_width;
         let has_messages = self.list_state.item_count() > 0;
-        let fills_container = !has_messages || editor_expanded;
+        let fills_container = editor_expanded;
 
         h_flex()
             .py_2()
@@ -4613,20 +4613,18 @@ impl ThreadView {
             .map(|this| {
                 if has_messages {
                     this.on_action(cx.listener(Self::expand_message_editor))
-                        .border_t_1()
-                        .border_color(cx.theme().colors().border)
                         .when(editor_expanded, |this| this.h(vh(0.8, window)))
                 } else {
-                    this.flex_1().size_full()
+                    this.flex_1().items_end()
                 }
             })
             .child(
-                v_flex()
+                fork_ui::agent_composer_frame()
                     .when_some(max_content_width, |this, max_w| this.flex_basis(max_w))
                     .when(max_content_width.is_none(), |this| this.w_full())
                     .min_w_0()
                     .when(fills_container, |this| this.h_full())
-                    .px_2()
+                    .mx(px(10.))
                     .flex_shrink_1()
                     .flex_grow_0()
                     .justify_between()
@@ -6473,15 +6471,15 @@ impl ThreadView {
                                 div()
                                     .py_3()
                                     .px_2()
-                                    .rounded_md()
-                                    .bg(cx.theme().colors().editor_background)
+                                    .rounded(px(12.))
+                                    .bg(fork_ui::agent_user_bubble_background())
                                     .border_1()
                                     .when(is_indented, |this| {
                                         this.py_2().px_2().when(opaque_window, |this| {
                                             this.shadow_sm()
                                         })
                                     })
-                                    .border_color(cx.theme().colors().border)
+                                    .border_color(fork_ui::agent_user_bubble_border())
                                     .map(|this| {
                                         if !is_editable {
                                             if is_subagent {
@@ -7776,14 +7774,9 @@ impl ThreadView {
                             .gap_1p5()
                             .overflow_hidden()
                             .child(
-                                Icon::new(IconName::ToolThink)
-                                    .size(IconSize::Small)
-                                    .color(Color::Muted),
-                            )
-                            .child(
                                 div()
                                     .text_size(self.tool_name_font_size())
-                                    .text_color(cx.theme().colors().text_muted)
+                                    .text_color(fork_ui::agent_muted_text())
                                     .child("Thinking"),
                             ),
                     )
@@ -7810,10 +7803,6 @@ impl ThreadView {
                         .child(
                             div()
                                 .id(("thinking-content", chunk_ix))
-                                .ml_1p5()
-                                .pl_3p5()
-                                .border_l_1()
-                                .border_color(self.tool_card_border_color(cx))
                                 .when(is_constrained, |this| this.max_h_64())
                                 .when_some(scroll_handle, |this, scroll_handle| {
                                     this.track_scroll(&scroll_handle)
@@ -11438,8 +11427,8 @@ impl ThreadView {
             .blend(cx.theme().colors().editor_foreground.opacity(0.025))
     }
 
-    fn tool_card_border_color(&self, cx: &Context<Self>) -> Hsla {
-        cx.theme().colors().border.opacity(0.8)
+    fn tool_card_border_color(&self, _cx: &Context<Self>) -> Hsla {
+        fork_ui::agent_card_border()
     }
 
     fn tool_name_font_size(&self) -> Rems {

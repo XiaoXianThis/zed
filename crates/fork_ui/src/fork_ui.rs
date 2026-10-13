@@ -1,4 +1,7 @@
-use gpui::{Action, AnyView, App, Pixels, SharedString, Window, prelude::*};
+use gpui::{
+    Action, AnyView, App, Div, ElementId, Hsla, Pixels, SharedString, Stateful, Window, prelude::*,
+    rgb,
+};
 use ui::{Tooltip, prelude::*};
 
 pub struct PanelSlot {
@@ -149,6 +152,80 @@ pub fn settings_button() -> impl IntoElement {
         .tooltip(Tooltip::text("Settings"))
         .on_click(|_, window, cx| {
             window.dispatch_action(zed_actions::OpenSettings.boxed_clone(), cx)
+        })
+}
+
+fn cursor_color(hex: u32, alpha: f32) -> Hsla {
+    let color: Hsla = rgb(hex).into();
+    color.opacity(alpha)
+}
+
+pub fn agent_panel_background() -> Hsla {
+    cursor_color(0x1f1f1f, 1.)
+}
+
+pub fn agent_tab_strip_height() -> Pixels {
+    px(35.)
+}
+
+pub fn agent_tab_separator() -> Hsla {
+    cursor_color(0x2b2b2b, 1.)
+}
+
+pub fn agent_muted_text() -> Hsla {
+    cursor_color(0xcccccc, 0.6)
+}
+
+pub fn agent_user_bubble_background() -> Hsla {
+    cursor_color(0x2e2e2e, 1.)
+}
+
+pub fn agent_user_bubble_border() -> Hsla {
+    cursor_color(0xcccccc, 0.12)
+}
+
+pub fn agent_card_border() -> Hsla {
+    cursor_color(0xcccccc, 0.12)
+}
+
+pub fn agent_composer_frame() -> Div {
+    v_flex()
+        .px(px(10.))
+        .pt(px(6.))
+        .pb(px(6.))
+        .rounded(px(12.))
+        .bg(cursor_color(0x313131, 0.9))
+        .border_1()
+        .border_color(cursor_color(0xcccccc, 0.2))
+}
+
+pub fn agent_tab_strip() -> Stateful<Div> {
+    h_flex()
+        .id("agent-thread-tabs")
+        .h_full()
+        .min_w_0()
+        .flex_1()
+        .overflow_x_scroll()
+}
+
+pub fn agent_thread_tab(id: impl Into<ElementId>, selected: bool) -> Stateful<Div> {
+    h_flex()
+        .id(id)
+        .h_full()
+        .min_w_0()
+        .flex_shrink_0()
+        .px(px(10.))
+        .gap_1p5()
+        .border_r_1()
+        .border_color(agent_tab_separator())
+        .cursor_pointer()
+        .when(selected, |this| {
+            this.w(px(200.)).bg(agent_panel_background())
+        })
+        .when(!selected, |this| this.max_w(px(200.)))
+        .when(!selected, |this| {
+            this.bg(cursor_color(0x181818, 1.))
+                .hover(|style| style.bg(cursor_color(0x1f1f1f, 1.)))
         })
 }
 
