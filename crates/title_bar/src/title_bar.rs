@@ -406,6 +406,7 @@ impl Render for TitleBar {
                 .when(TitleBarSettings::get_global(cx).show_user_menu, |this| {
                     this.child(self.render_user_menu_button(cx))
                 })
+                .child(fork_ui::settings_button())
                 .into_any_element(),
         );
 

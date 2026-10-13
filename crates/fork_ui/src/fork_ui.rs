@@ -142,6 +142,16 @@ impl RenderOnce for ActivityStrip {
     }
 }
 
+pub fn settings_button() -> impl IntoElement {
+    IconButton::new("fork-settings", IconName::Settings)
+        .icon_size(IconSize::Small)
+        .icon_color(Color::Muted)
+        .tooltip(Tooltip::text("Settings"))
+        .on_click(|_, window, cx| {
+            window.dispatch_action(zed_actions::OpenSettings.boxed_clone(), cx)
+        })
+}
+
 fn render_item(item: ActivityItem) -> impl IntoElement {
     let action = item.action;
     let color = if item.selected {

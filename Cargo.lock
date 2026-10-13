@@ -6673,8 +6673,11 @@ name = "fork_status_bar"
 version = "0.1.0"
 dependencies = [
  "editor",
+ "file_icons",
  "gpui",
  "language",
+ "project",
+ "settings",
  "ui",
  "workspace",
 ]
@@ -6685,6 +6688,7 @@ version = "0.1.0"
 dependencies = [
  "gpui",
  "ui",
+ "zed_actions",
 ]
 
 [[package]]
@@ -18709,6 +18713,7 @@ dependencies = [
  "cloud_api_types",
  "command_palette_hooks",
  "db",
+ "fork_ui",
  "fs",
  "git_ui_core",
  "gpui",
