@@ -6669,6 +6669,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "fork_status_bar"
+version = "0.1.0"
+dependencies = [
+ "editor",
+ "gpui",
+ "language",
+ "ui",
+ "workspace",
+]
+
+[[package]]
 name = "fork_ui"
 version = "0.1.0"
 dependencies = [
@@ -22845,6 +22856,7 @@ dependencies = [
  "feature_flags",
  "feedback",
  "file_finder",
+ "fork_status_bar",
  "fs",
  "futures 0.3.34",
  "git",

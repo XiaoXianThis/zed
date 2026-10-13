@@ -81,6 +81,7 @@ members = [
     "crates/feedback",
     "crates/file_finder",
     "crates/file_icons",
+    "crates/fork_status_bar",
     "crates/fork_ui",
     "crates/fs",
     "crates/fs_benchmarks",
@@ -354,6 +355,7 @@ feature_flags_macros = { path = "crates/feature_flags_macros" }
 feedback = { path = "crates/feedback" }
 file_finder = { path = "crates/file_finder" }
 file_icons = { path = "crates/file_icons" }
+fork_status_bar = { path = "crates/fork_status_bar" }
 fork_ui = { path = "crates/fork_ui" }
 fs = { path = "crates/fs" }
 fuzzy = { path = "crates/fuzzy" }
