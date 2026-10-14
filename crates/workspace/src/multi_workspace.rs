@@ -28,7 +28,7 @@ const SIDEBAR_RESIZE_HANDLE_SIZE: Pixels = px(6.0);
 use crate::open_remote_project_with_existing_connection;
 use crate::{
     CloseIntent, CloseWindow, DockPosition, Event as WorkspaceEvent, Item, ModalView, OpenMode,
-    Panel, Workspace, WorkspaceId, client_side_decorations,
+    Panel, Workspace, WorkspaceId, WorkspaceSettings, client_side_decorations,
     persistence::model::MultiWorkspaceState,
 };
 
@@ -1998,6 +1998,7 @@ impl Render for MultiWorkspace {
         let multi_workspace_enabled = self.multi_workspace_enabled(cx);
         let sidebar_side = self.sidebar_side(cx);
         let sidebar_on_right = sidebar_side == SidebarSide::Right;
+        let activity_strips = WorkspaceSettings::get_global(cx).activity_strips;
 
         let sidebar: Option<AnyElement> = if multi_workspace_enabled && self.sidebar_open() {
             self.sidebar.as_ref().map(|sidebar_handle| {
@@ -2179,12 +2180,12 @@ impl Render for MultiWorkspace {
                         .flex_1()
                         .min_h_0()
                         .size_full()
-                        .child(
+                        .children(activity_strips.then(|| {
                             self.workspace()
                                 .read(cx)
                                 .render_activity_strip(fork_ui::StripSide::Left, cx)
-                                .with_top_inset(ui::utils::platform_title_bar_height(window)),
-                        )
+                                .with_top_inset(ui::utils::platform_title_bar_height(window))
+                        }))
                         .children(left_sidebar)
                         .child(
                             div()
@@ -2195,12 +2196,12 @@ impl Render for MultiWorkspace {
                                 .child(self.workspace().clone()),
                         )
                         .children(right_sidebar)
-                        .child(
+                        .children(activity_strips.then(|| {
                             self.workspace()
                                 .read(cx)
                                 .render_activity_strip(fork_ui::StripSide::Right, cx)
-                                .with_top_inset(ui::utils::platform_title_bar_height(window)),
-                        ),
+                                .with_top_inset(ui::utils::platform_title_bar_height(window))
+                        })),
                 )
                 .children(status_bar)
                 .child(self.workspace().read(cx).modal_layer.clone())

@@ -108,23 +108,44 @@ impl ActivityStrip {
     }
 }
 
-impl RenderOnce for ActivityStrip {
-    fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
+impl ActivityStrip {
+    fn collect_items(
+        self,
+        window: &Window,
+        cx: &App,
+    ) -> (Vec<ActivityItem>, Vec<ActivityItem>, Vec<AnyView>) {
         let (top_slots, bottom_slots) = panel_slots(self.side);
-        let top: Vec<_> = top_slots
+        let top = top_slots
             .iter()
             .filter_map(|slot| (self.panel_item)(slot, window, cx))
             .chain(self.extra_top)
             .collect();
-        let bottom: Vec<_> = bottom_slots
+        let bottom = bottom_slots
             .iter()
             .filter_map(|slot| (self.panel_item)(slot, window, cx))
+        (top, bottom, self.footer)
+    }
+
+    pub fn into_title_bar_items(self, window: &Window, cx: &App) -> impl IntoElement {
+        let (top, bottom, footer) = self.collect_items(window, cx);
+        h_flex()
+            .gap_1()
+            .items_center()
+            .children(top.into_iter().chain(bottom).map(render_item))
+            .children(footer)
+    }
+}
+
+impl RenderOnce for ActivityStrip {
+    fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
+        let top_inset = self.top_inset;
+        let (top, bottom, footer) = self.collect_items(window, cx);
             .collect();
         v_flex()
             .h_full()
             .w(strip_width())
             .flex_none()
-            .pt(self.top_inset + px(8.))
+            .pt(top_inset + px(8.))
             .pb_2()
             .justify_between()
             .items_center()
@@ -140,7 +161,7 @@ impl RenderOnce for ActivityStrip {
                     .gap_3()
                     .items_center()
                     .children(bottom.into_iter().map(render_item))
-                    .children(self.footer),
+                    .children(footer),
             )
     }
 }

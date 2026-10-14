@@ -8635,7 +8635,7 @@ impl Workspace {
             )
     }
 
-    pub(crate) fn render_activity_strip(
+    pub fn render_activity_strip(
         &self,
         side: fork_ui::StripSide,
         cx: &App,

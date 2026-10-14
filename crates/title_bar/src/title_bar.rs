@@ -53,7 +53,7 @@ use ui::{
 use update_version::UpdateVersion;
 use util::ResultExt;
 use workspace::{
-    AccessibleMode, MultiWorkspace, ToggleWorktreeSecurity, Workspace,
+    AccessibleMode, MultiWorkspace, ToggleWorktreeSecurity, Workspace, WorkspaceSettings,
     notifications::{NotifyResultExt, NotifyTaskExt as _},
 };
 
@@ -242,6 +242,9 @@ impl Render for TitleBar {
         let is_git_enabled = ProjectSettings::get_global(cx).git.enabled.status;
 
         let show_menus = show_menus(cx);
+        let activity_items = (!WorkspaceSettings::get_global(cx).activity_strips)
+            .then(|| self.render_activity_items(window, cx))
+            .flatten();
 
         let mut children = <ArrayVec<_, 5>>::new();
 
@@ -380,6 +383,7 @@ impl Render for TitleBar {
                 .pr_1()
                 .gap_1()
                 .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation())
+                .children(activity_items)
                 .child(self.render_call_controls(window, cx))
                 .children(self.render_connection_status(status, cx))
                 .child(self.update_version.clone())
@@ -607,6 +611,20 @@ impl TitleBar {
                 worktree_path == *repo_path || worktree_path.starts_with(repo_path.as_ref())
             })
             .count()
+    }
+
+    fn render_activity_items(&self, window: &Window, cx: &App) -> Option<AnyElement> {
+        let workspace_entity = self.workspace.upgrade()?;
+        let workspace = workspace_entity.read(cx);
+        let left = workspace.render_activity_strip(fork_ui::StripSide::Left, cx);
+        let right = workspace.render_activity_strip(fork_ui::StripSide::Right, cx);
+        Some(
+            h_flex()
+                .gap_1()
+                .child(left.into_title_bar_items(window, cx))
+                .child(right.into_title_bar_items(window, cx))
+                .into_any_element(),
+        )
     }
 
     fn render_remote_project_connection(&self, cx: &mut Context<Self>) -> Option<AnyElement> {
