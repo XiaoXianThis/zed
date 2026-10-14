@@ -159,7 +159,7 @@ impl RenderOnce for ActivityStrip {
             .pb_2()
             .justify_between()
             .items_center()
-            .bg(cx.theme().colors().title_bar_background)
+            .bg(cx.theme().colors().background)
             .child(
                 v_flex()
                     .gap_3()

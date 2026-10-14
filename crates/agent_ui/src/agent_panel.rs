@@ -5518,7 +5518,7 @@ impl AgentPanel {
             VisibleSurface::Uninitialized => Label::new("Agent").truncate().into_any_element(),
         };
 
-        let toolbar_bg = cx.theme().colors().tab_bar_background;
+        let toolbar_bg = cx.theme().colors().background;
         let gradient_overlay = GradientFade::new(toolbar_bg, toolbar_bg, toolbar_bg)
             .width(px(64.0))
             .right(px(0.0))
@@ -5545,7 +5545,7 @@ impl AgentPanel {
                             .absolute()
                             .right_0()
                             .h_full()
-                            .bg(cx.theme().colors().tab_bar_background)
+                            .bg(cx.theme().colors().background)
                             .child(
                                 IconButton::new("edit_tile", IconName::Pencil)
                                     .icon_size(IconSize::Small)
@@ -6206,7 +6206,7 @@ impl AgentPanel {
             .h(Tab::container_height(cx))
             .flex_shrink_0()
             .max_w_full()
-            .bg(cx.theme().colors().tab_bar_background)
+            .bg(cx.theme().colors().background)
             .border_b_1()
             .border_color(cx.theme().colors().border)
             .child(toolbar_content)

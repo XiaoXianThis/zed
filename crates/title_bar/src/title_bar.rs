@@ -730,9 +730,7 @@ impl TitleBar {
                                         Icon::new(icon).size(IconSize::Small).color(icon_color),
                                         Some(Indicator::dot().color(indicator_color)),
                                     )
-                                    .indicator_border_color(Some(
-                                        cx.theme().colors().title_bar_background,
-                                    ))
+                                    .indicator_border_color(Some(cx.theme().colors().background))
                                     .into_any_element(),
                                 )
                                 .child(Label::new(nickname).size(LabelSize::Small).truncate()),

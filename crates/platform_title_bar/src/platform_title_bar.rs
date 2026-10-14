@@ -86,12 +86,12 @@ impl PlatformTitleBar {
     pub fn title_bar_color(&self, window: &mut Window, cx: &mut Context<Self>) -> Hsla {
         if cfg!(any(target_os = "linux", target_os = "freebsd")) {
             if window.is_window_active() && !self.should_move {
-                cx.theme().colors().title_bar_background
+                cx.theme().colors().background
             } else {
                 cx.theme().colors().title_bar_inactive_background
             }
         } else {
-            cx.theme().colors().title_bar_background
+            cx.theme().colors().background
         }
     }
 
@@ -307,6 +307,8 @@ impl Render for PlatformTitleBar {
                     .border_color(titlebar_color),
             })
             .bg(titlebar_color)
+            .border_b_1()
+            .border_color(cx.theme().colors().border_variant)
             .content_stretch()
             .child(
                 div()
