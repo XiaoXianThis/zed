@@ -5518,7 +5518,7 @@ impl AgentPanel {
             VisibleSurface::Uninitialized => Label::new("Agent").truncate().into_any_element(),
         };
 
-        let toolbar_bg = fork_ui::agent_panel_background();
+        let toolbar_bg = cx.theme().colors().tab_bar_background;
         let gradient_overlay = GradientFade::new(toolbar_bg, toolbar_bg, toolbar_bg)
             .width(px(64.0))
             .right(px(0.0))
@@ -5545,7 +5545,7 @@ impl AgentPanel {
                             .absolute()
                             .right_0()
                             .h_full()
-                            .bg(fork_ui::agent_panel_background())
+                            .bg(cx.theme().colors().tab_bar_background)
                             .child(
                                 IconButton::new("edit_tile", IconName::Pencil)
                                     .icon_size(IconSize::Small)
@@ -5876,6 +5876,7 @@ impl AgentPanel {
                 fork_ui::agent_thread_tab(
                     SharedString::from(format!("agent-thread-tab-{thread_id:?}")),
                     selected,
+                    cx,
                 )
                 .child(label)
                 .when(!selected, |this| {
@@ -6262,9 +6263,9 @@ impl AgentPanel {
             .h(fork_ui::agent_tab_strip_height())
             .flex_shrink_0()
             .max_w_full()
-            .bg(fork_ui::agent_panel_background())
+            .bg(cx.theme().colors().tab_bar_background)
             .border_b_1()
-            .border_color(fork_ui::agent_tab_separator())
+            .border_color(cx.theme().colors().border)
             .child(toolbar_content)
     }
 
@@ -6562,7 +6563,7 @@ impl Render for AgentPanel {
             .size_full()
             .justify_between()
             .track_focus(&self.focus_handle)
-            .bg(fork_ui::agent_panel_background())
+            .bg(cx.theme().colors().panel_background)
             .on_action(cx.listener(|this, action: &NewThread, window, cx| {
                 this.new_thread(action, window, cx);
             }))

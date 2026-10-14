@@ -1,6 +1,5 @@
 use gpui::{
-    Action, AnyView, App, Div, ElementId, Hsla, Pixels, SharedString, Stateful, Window, prelude::*,
-    rgb,
+    Action, AnyView, App, Div, ElementId, Pixels, SharedString, Stateful, Window, prelude::*,
 };
 use ui::{Tooltip, prelude::*};
 
@@ -176,15 +175,6 @@ pub fn settings_button() -> impl IntoElement {
         })
 }
 
-fn cursor_color(hex: u32, alpha: f32) -> Hsla {
-    let color: Hsla = rgb(hex).into();
-    color.opacity(alpha)
-}
-
-pub fn agent_panel_background() -> Hsla {
-    cursor_color(0x1f1f1f, 1.)
-}
-
 pub fn agent_tab_strip_height() -> Pixels {
     px(35.)
 }
@@ -193,39 +183,15 @@ pub fn agent_body_line_height() -> Pixels {
     px(22.)
 }
 
-pub fn agent_composer_min_editor_height() -> Pixels {
-    px(44.)
-}
-
-pub fn agent_tab_separator() -> Hsla {
-    cursor_color(0x2b2b2b, 1.)
-}
-
-pub fn agent_muted_text() -> Hsla {
-    cursor_color(0xcccccc, 0.6)
-}
-
-pub fn agent_user_bubble_background() -> Hsla {
-    cursor_color(0x2e2e2e, 1.)
-}
-
-pub fn agent_user_bubble_border() -> Hsla {
-    cursor_color(0xcccccc, 0.12)
-}
-
-pub fn agent_card_border() -> Hsla {
-    cursor_color(0xcccccc, 0.12)
-}
-
-pub fn agent_composer_frame() -> Div {
+pub fn agent_composer_frame(cx: &App) -> Div {
     v_flex()
         .px(px(10.))
-        .pt(px(6.))
+        .pt(px(8.))
         .pb(px(6.))
         .rounded(px(12.))
-        .bg(cursor_color(0x313131, 0.9))
+        .bg(cx.theme().colors().editor_background)
         .border_1()
-        .border_color(cursor_color(0xcccccc, 0.2))
+        .border_color(cx.theme().colors().border)
 }
 
 pub fn agent_tab_strip() -> Stateful<Div> {
@@ -237,7 +203,8 @@ pub fn agent_tab_strip() -> Stateful<Div> {
         .overflow_x_scroll()
 }
 
-pub fn agent_thread_tab(id: impl Into<ElementId>, selected: bool) -> Stateful<Div> {
+pub fn agent_thread_tab(id: impl Into<ElementId>, selected: bool, cx: &App) -> Stateful<Div> {
+    let colors = cx.theme().colors();
     h_flex()
         .id(id)
         .h_full()
@@ -246,15 +213,15 @@ pub fn agent_thread_tab(id: impl Into<ElementId>, selected: bool) -> Stateful<Di
         .px(px(10.))
         .gap_1p5()
         .border_r_1()
-        .border_color(agent_tab_separator())
+        .border_color(colors.border)
         .cursor_pointer()
         .when(selected, |this| {
-            this.w(px(200.)).bg(agent_panel_background())
+            this.w(px(200.)).bg(colors.tab_active_background)
         })
-        .when(!selected, |this| this.max_w(px(200.)))
         .when(!selected, |this| {
-            this.bg(cursor_color(0x181818, 1.))
-                .hover(|style| style.bg(cursor_color(0x1f1f1f, 1.)))
+            this.max_w(px(200.))
+                .bg(colors.tab_inactive_background)
+                .hover(|style| style.bg(colors.tab_active_background))
         })
 }
 

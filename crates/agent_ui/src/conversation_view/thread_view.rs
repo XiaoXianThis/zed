@@ -4592,7 +4592,7 @@ impl ThreadView {
         }
 
         let focus_handle = self.message_editor.focus_handle(cx);
-        let editor_bg_color = fork_ui::agent_panel_background();
+        let editor_bg_color = cx.theme().colors().editor_background;
 
         let editor_expanded = self.editor_expanded;
         let (expand_icon, expand_tooltip) = if editor_expanded {
@@ -4619,27 +4619,23 @@ impl ThreadView {
                 }
             })
             .child(
-                fork_ui::agent_composer_frame()
+                fork_ui::agent_composer_frame(cx)
                     .when_some(max_content_width, |this, max_w| this.flex_basis(max_w))
                     .when(max_content_width.is_none(), |this| this.w_full())
                     .min_w_0()
                     .when(fills_container, |this| this.h_full())
-                    .mx(px(10.))
+                    .mx(px(16.))
                     .flex_shrink_1()
                     .flex_grow_0()
                     .justify_between()
-                    .gap_2()
+                    .gap(px(6.))
                     .child(
                         v_flex()
                             .relative()
                             .w_full()
                             .min_h_0()
                             .when(fills_container, |this| this.flex_1())
-                            .pt_1()
                             .pr_2p5()
-                            .when(!has_messages, |this| {
-                                this.min_h(fork_ui::agent_composer_min_editor_height())
-                            })
                             .child(self.message_editor.clone())
                             .when(has_messages, |this| {
                                 this.child(
@@ -6441,11 +6437,11 @@ impl ThreadView {
                         if is_first_indented {
                             this.pt_0p5()
                         } else {
-                            this.pt_2()
+                            this.pt(px(10.))
                         }
                     })
-                    .pb_3()
-                    .px_2()
+                    .pb(px(10.))
+                    .px(px(16.))
                     .gap_1p5()
                     .w_full()
                     .when(can_restore_checkpoint && has_checkpoint_button, |this| {
@@ -6472,17 +6468,17 @@ impl ThreadView {
                             .relative()
                             .child(
                                 div()
-                                    .py_3()
-                                    .px_2()
+                                    .py(px(8.))
+                                    .px(px(10.))
                                     .rounded(px(12.))
-                                    .bg(fork_ui::agent_user_bubble_background())
+                                    .bg(cx.theme().colors().editor_background)
                                     .border_1()
                                     .when(is_indented, |this| {
                                         this.py_2().px_2().when(opaque_window, |this| {
                                             this.shadow_sm()
                                         })
                                     })
-                                    .border_color(fork_ui::agent_user_bubble_border())
+                                    .border_color(cx.theme().colors().border)
                                     .map(|this| {
                                         if !is_editable {
                                             if is_subagent {
@@ -7779,7 +7775,7 @@ impl ThreadView {
                             .child(
                                 div()
                                     .text_size(self.tool_name_font_size())
-                                    .text_color(fork_ui::agent_muted_text())
+                                    .text_color(cx.theme().colors().text_muted)
                                     .child("Thinking"),
                             ),
                     )
@@ -7806,6 +7802,7 @@ impl ThreadView {
                         .child(
                             div()
                                 .id(("thinking-content", chunk_ix))
+                                .pl(px(16.))
                                 .when(is_constrained, |this| this.max_h_64())
                                 .when_some(scroll_handle, |this, scroll_handle| {
                                     this.track_scroll(&scroll_handle)
@@ -8755,7 +8752,7 @@ impl ThreadView {
                             .justify_between()
                             .when(use_card_layout, |this| {
                                 this.p_0p5()
-                                    .rounded_t(rems_from_px(5_f32))
+                                    .rounded_t(px(12.))
                                     .bg(self.tool_card_header_bg(cx))
                             })
                             .child(self.render_tool_call_label(
@@ -8923,7 +8920,7 @@ impl ThreadView {
                         .border_1()
                         .when(failed_or_canceled, |this| this.border_dashed())
                         .border_color(self.tool_card_border_color(cx))
-                        .bg(fork_ui::agent_panel_background())
+                        .bg(cx.theme().colors().editor_background)
                         .overflow_hidden()
                 } else {
                     this.my_1()
@@ -11429,12 +11426,12 @@ impl ThreadView {
             .blend(cx.theme().colors().editor_foreground.opacity(0.025))
     }
 
-    fn tool_card_border_color(&self, _cx: &Context<Self>) -> Hsla {
-        fork_ui::agent_card_border()
+    fn tool_card_border_color(&self, cx: &Context<Self>) -> Hsla {
+        cx.theme().colors().border.opacity(0.8)
     }
 
     fn tool_name_font_size(&self) -> Rems {
-        rems_from_px(13_f32)
+        rems_from_px(14_f32)
     }
 
     fn provider_by_name(name: &SharedString, cx: &App) -> Option<Arc<dyn LanguageModelProvider>> {
