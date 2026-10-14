@@ -92,6 +92,8 @@
   // Layout mode of the bottom dock. Defaults to "contained"
   //   choices: contained, full, left_aligned, right_aligned
   "bottom_dock_layout": "left_aligned",
+  // Whether to show the left and right activity strips. When disabled, their panel buttons are shown in the title bar instead.
+  "activity_strips": true,
   // The direction that you want to split panes horizontally. Defaults to "down"
   "pane_split_direction_horizontal": "down",
   // The direction that you want to split panes vertically. Defaults to "right"

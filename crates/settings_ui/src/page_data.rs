@@ -5004,7 +5004,7 @@ fn window_and_layout_page() -> SettingsPage {
         ]
     }
 
-    fn layout_section() -> [SettingsPageItem; 6] {
+    fn layout_section() -> [SettingsPageItem; 7] {
         [
             SettingsPageItem::SectionHeader("Layout"),
             SettingsPageItem::SettingItem(SettingItem {
@@ -5020,6 +5020,20 @@ fn window_and_layout_page() -> SettingsPage {
                 }),
                 metadata: None,
                 files: USER,
+            }),
+            SettingsPageItem::SettingItem(SettingItem {
+                files: USER,
+                title: "Activity Strips",
+                description: "Show the left and right icon strips. When disabled, panel buttons move to the title bar.",
+                field: Box::new(SettingField {
+                    organization_override: None,
+                    json_path: Some("activity_strips"),
+                    pick: |settings_content| settings_content.workspace.activity_strips.as_ref(),
+                    write: |settings_content, value, _| {
+                        settings_content.workspace.activity_strips = value;
+                    },
+                }),
+                metadata: None,
             }),
             SettingsPageItem::SettingItem(SettingItem {
                 files: USER,

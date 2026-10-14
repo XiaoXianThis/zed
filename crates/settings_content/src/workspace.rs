@@ -23,6 +23,11 @@ pub struct WorkspaceSettingsContent {
     ///
     /// Default: contained
     pub bottom_dock_layout: Option<BottomDockLayout>,
+    /// Whether to show the left and right activity strips. When disabled, their
+    /// panel buttons are shown in the title bar instead.
+    ///
+    /// Default: true
+    pub activity_strips: Option<bool>,
     /// Direction to split horizontally.
     ///
     /// Default: "up"
