@@ -5684,7 +5684,7 @@ impl ThreadView {
                 IconName::Send
             };
             IconButton::new("send-message", send_icon)
-                .style(ButtonStyle::Filled)
+                .style(ButtonStyle::Transparent)
                 .map(|this| {
                     if is_editor_empty && !is_generating {
                         this.disabled(true).icon_color(Color::Muted)
@@ -8919,11 +8919,11 @@ impl ThreadView {
                     this
                 } else if use_card_layout {
                     this.my_1p5()
-                        .rounded_md()
+                        .rounded(px(12.))
                         .border_1()
                         .when(failed_or_canceled, |this| this.border_dashed())
                         .border_color(self.tool_card_border_color(cx))
-                        .bg(cx.theme().colors().editor_background)
+                        .bg(fork_ui::agent_panel_background())
                         .overflow_hidden()
                 } else {
                     this.my_1()
