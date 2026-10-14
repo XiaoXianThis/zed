@@ -242,8 +242,12 @@ impl Render for TitleBar {
         let is_git_enabled = ProjectSettings::get_global(cx).git.enabled.status;
 
         let show_menus = show_menus(cx);
-        let activity_items = (!WorkspaceSettings::get_global(cx).activity_strips)
+        let strips_hidden = !WorkspaceSettings::get_global(cx).activity_strips;
+        let activity_items = strips_hidden
             .then(|| self.render_activity_items(window, cx))
+            .flatten();
+        let left_dock_toggle = strips_hidden
+            .then(|| self.render_left_dock_toggle(cx))
             .flatten();
 
         let mut children = <ArrayVec<_, 5>>::new();
@@ -317,6 +321,7 @@ impl Render for TitleBar {
                     let mut render_project_items = title_bar_settings.show_branch_name
                         || title_bar_settings.show_project_items;
                     title_bar
+                        .children(left_dock_toggle)
                         .when_some(
                             self.application_menu.clone().filter(|_| !show_menus),
                             |title_bar, menu| {
@@ -613,10 +618,35 @@ impl TitleBar {
             .count()
     }
 
+    fn render_left_dock_toggle(&self, cx: &App) -> Option<AnyElement> {
+        let workspace = self.workspace.upgrade()?;
+        let is_open = workspace.read(cx).left_dock().read(cx).is_open();
+        let icon = if is_open {
+            IconName::ThreadsSidebarLeftOpen
+        } else {
+            IconName::ThreadsSidebarLeftClosed
+        };
+        let weak_workspace = self.workspace.clone();
+        Some(
+            IconButton::new("toggle-left-dock", icon)
+                .icon_size(IconSize::Small)
+                .icon_color(Color::Muted)
+                .tooltip(Tooltip::text("Toggle Left Dock"))
+                .on_click(move |_, window, cx| {
+                    weak_workspace
+                        .update(cx, |workspace, cx| workspace.toggle_left_dock(window, cx))
+                        .log_err();
+                })
+                .into_any_element(),
+        )
+    }
+
     fn render_activity_items(&self, window: &Window, cx: &App) -> Option<AnyElement> {
         let workspace_entity = self.workspace.upgrade()?;
         let workspace = workspace_entity.read(cx);
-        let left = workspace.render_activity_strip(fork_ui::StripSide::Left, cx);
+        let left = workspace
+            .render_activity_strip(fork_ui::StripSide::Left, cx)
+            .without_top_items();
         let right = workspace.render_activity_strip(fork_ui::StripSide::Right, cx);
         Some(
             h_flex()

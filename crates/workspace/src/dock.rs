@@ -1290,10 +1290,21 @@ impl Dock {
 }
 
 impl Render for Dock {
-    fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+    fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let dispatch_context = Self::dispatch_context();
         if let Some(entry) = self.visible_entry() {
             let position = self.position;
+            let tabs = (position == DockPosition::Left
+                && !WorkspaceSettings::get_global(cx).activity_strips)
+                .then(|| {
+                    let items = fork_ui::panel_slots(fork_ui::StripSide::Left)
+                        .0
+                        .iter()
+                        .filter_map(|slot| self.activity_item(slot, window, cx))
+                        .chain(std::iter::once(fork_ui::extensions_item()))
+                        .collect();
+                    fork_ui::dock_tab_strip(items, cx)
+                });
             let create_resize_handle = || {
                 let handle = div()
                     .id("resize-handle")
@@ -1379,12 +1390,24 @@ impl Render for Dock {
                             Axis::Horizontal => this.w_full().h_full(),
                             Axis::Vertical => this.h_full().w_full(),
                         })
-                        .child(
-                            entry
+                        .child(match tabs {
+                            Some(tabs) => {
+                                v_flex()
+                                    .size_full()
+                                    .child(tabs)
+                                    .child(div().flex_1().min_h_0().child(
+                                        entry.panel.to_any().cached(
+                                            StyleRefinement::default().v_flex().size_full(),
+                                        ),
+                                    ))
+                                    .into_any_element()
+                            }
+                            None => entry
                                 .panel
                                 .to_any()
-                                .cached(StyleRefinement::default().v_flex().size_full()),
-                        ),
+                                .cached(StyleRefinement::default().v_flex().size_full())
+                                .into_any_element(),
+                        }),
                 )
                 .when(self.resizable(cx), |this| {
                     this.child(create_resize_handle())

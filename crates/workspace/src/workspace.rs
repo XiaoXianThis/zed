@@ -4525,6 +4525,10 @@ impl Workspace {
         self.dock_at_position(position).read(cx).is_open()
     }
 
+    pub fn toggle_left_dock(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        self.toggle_dock(DockPosition::Left, window, cx);
+    }
+
     pub fn toggle_dock(
         &mut self,
         dock_side: DockPosition,
@@ -8662,13 +8666,7 @@ impl Workspace {
         });
         let mut extra_top = Vec::new();
         if side == fork_ui::StripSide::Left {
-            extra_top.push(fork_ui::ActivityItem {
-                id: "extensions".into(),
-                icon: IconName::Blocks,
-                tooltip: "Extensions".into(),
-                selected: false,
-                action: Box::new(zed_actions::Extensions::default()),
-            });
+            extra_top.push(fork_ui::extensions_item());
         }
         if side == fork_ui::StripSide::Right {
             extra_top.push(fork_ui::ActivityItem {

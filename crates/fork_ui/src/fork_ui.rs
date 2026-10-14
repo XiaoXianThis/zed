@@ -1,7 +1,7 @@
 use gpui::{
     Action, AnyView, App, Div, ElementId, Pixels, SharedString, Stateful, Window, prelude::*,
 };
-use ui::{Tooltip, prelude::*};
+use ui::{Tab, Tooltip, prelude::*};
 
 pub struct PanelSlot {
     pub persistent_name: &'static str,
@@ -83,6 +83,7 @@ pub struct ActivityStrip {
     extra_top: Vec<ActivityItem>,
     footer: Vec<AnyView>,
     top_inset: Pixels,
+    top_items: bool,
 }
 
 impl ActivityStrip {
@@ -93,6 +94,7 @@ impl ActivityStrip {
             extra_top,
             footer: Vec::new(),
             top_inset: px(0.),
+            top_items: true,
         }
     }
 
@@ -105,6 +107,11 @@ impl ActivityStrip {
         self.top_inset = top_inset;
         self
     }
+
+    pub fn without_top_items(mut self) -> Self {
+        self.top_items = false;
+        self
+    }
 }
 
 impl ActivityStrip {
@@ -114,11 +121,15 @@ impl ActivityStrip {
         cx: &App,
     ) -> (Vec<ActivityItem>, Vec<ActivityItem>, Vec<AnyView>) {
         let (top_slots, bottom_slots) = panel_slots(self.side);
-        let top = top_slots
-            .iter()
-            .filter_map(|slot| (self.panel_item)(slot, window, cx))
-            .chain(self.extra_top)
-            .collect();
+        let top = if self.top_items {
+            top_slots
+                .iter()
+                .filter_map(|slot| (self.panel_item)(slot, window, cx))
+                .chain(self.extra_top)
+                .collect()
+        } else {
+            Vec::new()
+        };
         let bottom = bottom_slots
             .iter()
             .filter_map(|slot| (self.panel_item)(slot, window, cx))
@@ -223,6 +234,44 @@ pub fn agent_thread_tab(id: impl Into<ElementId>, selected: bool, cx: &App) -> S
                 .bg(colors.tab_inactive_background)
                 .hover(|style| style.bg(colors.tab_active_background))
         })
+}
+
+pub fn extensions_item() -> ActivityItem {
+    ActivityItem {
+        id: "extensions".into(),
+        icon: IconName::Blocks,
+        tooltip: "Extensions".into(),
+        selected: false,
+        action: Box::new(zed_actions::Extensions::default()),
+    }
+}
+
+pub fn dock_tab_strip(items: Vec<ActivityItem>, cx: &App) -> impl IntoElement {
+    let colors = cx.theme().colors();
+    h_flex()
+        .w_full()
+        .h(Tab::container_height(cx))
+        .border_b_1()
+        .border_color(colors.border)
+        .children(items.into_iter().map(|item| {
+            let action = item.action;
+            let (background, color) = if item.selected {
+                (colors.tab_active_background, Color::Accent)
+            } else {
+                (colors.tab_inactive_background, Color::Muted)
+            };
+            h_flex()
+                .id(item.id)
+                .flex_1()
+                .h_full()
+                .justify_center()
+                .bg(background)
+                .cursor_pointer()
+                .hover(|style| style.bg(colors.element_hover))
+                .tooltip(Tooltip::text(item.tooltip))
+                .child(Icon::new(item.icon).size(IconSize::Small).color(color))
+                .on_click(move |_, window, cx| window.dispatch_action(action.boxed_clone(), cx))
+        }))
 }
 
 fn render_item(item: ActivityItem) -> impl IntoElement {
