@@ -99,7 +99,7 @@ use ui::{
 use util::ResultExt as _;
 use workspace::{
     CollaboratorId, DraggedSelection, DraggedTab, MultiWorkspace, PathList, SerializedPathList,
-    ToggleWorkspaceSidebar, ToggleZoom, ToolbarItemView, Workspace, WorkspaceId,
+    ToggleZoom, ToolbarItemView, Workspace, WorkspaceId,
     dock::{DockPosition, Panel, PanelEvent},
     item::{ItemEvent, ItemHandle},
 };
@@ -1121,6 +1121,7 @@ pub struct AgentPanel {
     test_terminal_spawn_gate: Option<futures::channel::oneshot::Receiver<()>>,
     new_thread_menu_handle: PopoverMenuHandle<ContextMenu>,
     agent_panel_menu_handle: PopoverMenuHandle<ContextMenu>,
+    threads_menu_handle: PopoverMenuHandle<ContextMenu>,
     _extension_subscription: Option<Subscription>,
     _project_subscription: Subscription,
     zoomed: bool,
@@ -1542,6 +1543,7 @@ impl AgentPanel {
             test_terminal_spawn_gate: None,
             new_thread_menu_handle: PopoverMenuHandle::default(),
             agent_panel_menu_handle: PopoverMenuHandle::default(),
+            threads_menu_handle: PopoverMenuHandle::default(),
 
             _extension_subscription: extension_subscription,
             _project_subscription,
@@ -5591,6 +5593,62 @@ impl AgentPanel {
         }
     }
 
+    fn render_threads_menu(&self, cx: &mut Context<Self>) -> impl IntoElement {
+        let project = self.project.read(cx);
+        let path_list = project.default_path_list(cx);
+        let remote_connection = project.remote_connection_options(cx);
+        let threads = {
+            let store = ThreadMetadataStore::global(cx);
+            let store = store.read(cx);
+            let mut threads = store
+                .entries_for_path(&path_list, remote_connection.as_ref())
+                .filter(|thread| !thread.is_draft())
+                .cloned()
+                .collect::<Vec<_>>();
+            threads.sort_by(|a, b| b.updated_at.cmp(&a.updated_at));
+            threads
+        };
+        let panel = cx.weak_entity();
+
+        PopoverMenu::new("agent-threads-menu")
+            .trigger_with_tooltip(
+                IconButton::new("agent-threads-menu", IconName::ThreadsSidebarRightClosed)
+                    .icon_size(IconSize::Small),
+                Tooltip::text("Threads"),
+            )
+            .anchor(Anchor::TopRight)
+            .with_handle(self.threads_menu_handle.clone())
+            .menu(move |window, cx| {
+                Some(ContextMenu::build(window, cx, |mut menu, _window, _cx| {
+                    menu = menu.header("Threads");
+                    if threads.is_empty() {
+                        menu = menu.label("No threads in this project");
+                    }
+                    for thread in &threads {
+                        let metadata = thread.clone();
+                        let panel = panel.clone();
+                        menu = menu.entry(thread.display_title(), None, move |window, cx| {
+                            panel
+                                .update(cx, |panel, cx| {
+                                    panel.load_agent_thread(
+                                        Agent::from(metadata.agent_id.clone()),
+                                        metadata.thread_id,
+                                        Some(metadata.folder_paths().clone()),
+                                        metadata.title.clone(),
+                                        true,
+                                        AgentThreadSource::AgentPanel,
+                                        window,
+                                        cx,
+                                    );
+                                })
+                                .log_err();
+                        });
+                    }
+                    menu
+                }))
+            })
+    }
+
     fn render_panel_options_menu(
         &self,
         _window: &mut Window,
@@ -5787,10 +5845,7 @@ impl AgentPanel {
                                 .action("Profiles", Box::new(ManageProfiles::default()));
                         }
 
-                        menu = menu
-                            .action("Settings", Box::new(OpenSettings))
-                            .separator()
-                            .action("Toggle Threads Sidebar", Box::new(ToggleWorkspaceSidebar));
+                        menu = menu.action("Settings", Box::new(OpenSettings)).separator();
 
                         if has_auth_methods || supports_logout {
                             menu = menu.separator()
@@ -6248,6 +6303,9 @@ impl AgentPanel {
                         .children(sandbox_status)
                         .when(can_create_entries, |this| this.child(new_thread_menu))
                         .child(full_screen_button)
+                        .when(self.has_open_project(cx), |this| {
+                            this.child(self.render_threads_menu(cx))
+                        })
                         .child(self.render_panel_options_menu(window, cx)),
                 )
                 .into_any_element()

@@ -8676,13 +8676,6 @@ impl Workspace {
                 selected: false,
                 action: Box::new(DeploySearch::default()),
             });
-            extra_top.push(fork_ui::ActivityItem {
-                id: "threads-sidebar".into(),
-                icon: IconName::ThreadsSidebarRightClosed,
-                tooltip: "Threads Sidebar".into(),
-                selected: false,
-                action: Box::new(ToggleWorkspaceSidebar),
-            });
         }
         let strip = fork_ui::ActivityStrip::new(side, panel_item, extra_top);
         if side == fork_ui::StripSide::Right {
