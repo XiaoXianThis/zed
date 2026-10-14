@@ -148,6 +148,9 @@ git config rerere.enabled true
 | 5 | `crates/agent_ui/Cargo.toml` 增加 `fork_ui` 依赖（`Cargo.lock` 同步） | 引入样式 token | fork(ui): restyle agent panel to match Cursor | fork | 已实施 |
 | 3 | `assets/settings/default.json` → `toolbar.breadcrumbs`（改为 false）、`toolbar.quick_actions`（改为 false） | 去掉编辑器顶部工具栏（面包屑路径、搜索/选择/过滤等快捷图标） | fork(settings): hide editor toolbar breadcrumbs and quick actions | fork | 已实施 |
 | 5 | `crates/agent_ui/src/agent_panel.rs` → `AgentPanel::new` 中 `new_user_onboarding_upsell_dismissed` 初始值改为 `true` | 去掉 Agent 面板顶部的 "Welcome to Zed AI" 引导卡片（`ai_onboarding` 实现保留，`ResetTrialUpsell` 仍可恢复） | fork(ui): hide agent panel welcome onboarding | 人工判断 | 已实施 |
+| 5 | `crates/agent_ui/src/agent_panel.rs` → `AgentPanel::render_toolbar` 中 `full_screen_button` 改为 `hide_panel_button`（`IconName::Dash`，派发 `PanelEvent::Close`，放大状态下先 `ZoomOut`），位于 `render_panel_options_menu` 之后 | Agent 面板的放大按钮改为隐藏面板，并放到最右侧 | 代码误随 `a15ccf27f4 fork(ui): hide agent panel welcome onboarding` 一并提交，待拆分为 fork(agent) 提交 | 人工判断 | 已实施 |
+| 6 | `crates/terminal_view/src/terminal_panel.rs` → `TerminalPanel::apply_tab_bar_buttons` 去掉无焦点时隐藏右侧按钮的判断；zoom 按钮改为 `IconName::Dash` 的 `hide_panel` 按钮（放在最右）；新增 `TerminalPanel::hide_panel`（放大状态先 `ZoomOut`，再 `PanelEvent::Close`） | 终端面板右侧图标常驻；放大按钮改为隐藏面板 | fork(terminal): replace terminal panel zoom with hide button | 人工判断 | 已实施 |
+| 5 | `crates/ui/src/components/tab_bar.rs` → `TabBar::render` 的 end 区域去掉 `border_l_1()` | 去掉标签栏右侧按钮前的竖线分割（影响所有使用 `TabBar` 的标签栏） | fork(ui): remove tab bar end divider | 人工判断 | 已实施 |
 
 ### 待确认事项（实施前需要核实）
 - Agent 面板未完全还原：工具调用行（非卡片形式）、助手消息正文、模式/模型胶囊按钮、消息底部操作区尚未逐项对照 Cursor 调整；需要在有已连接 Agent 的会话中做一次像素级对比。
