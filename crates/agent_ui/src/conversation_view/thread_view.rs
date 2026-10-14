@@ -4603,7 +4603,7 @@ impl ThreadView {
 
         let max_content_width = AgentSettings::get_global(cx).max_content_width;
         let has_messages = self.list_state.item_count() > 0;
-        let fills_container = editor_expanded;
+        let fills_container = !has_messages || editor_expanded;
 
         h_flex()
             .py_2()
@@ -4613,28 +4613,31 @@ impl ThreadView {
             .map(|this| {
                 if has_messages {
                     this.on_action(cx.listener(Self::expand_message_editor))
+                        .border_t_1()
+                        .border_color(cx.theme().colors().border)
                         .when(editor_expanded, |this| this.h(vh(0.8, window)))
                 } else {
-                    this.flex_1().items_end()
+                    this.flex_1().size_full()
                 }
             })
             .child(
-                fork_ui::agent_composer_frame(cx)
+                v_flex()
                     .when_some(max_content_width, |this, max_w| this.flex_basis(max_w))
                     .when(max_content_width.is_none(), |this| this.w_full())
                     .min_w_0()
                     .when(fills_container, |this| this.h_full())
-                    .mx(px(16.))
+                    .px_2()
                     .flex_shrink_1()
                     .flex_grow_0()
                     .justify_between()
-                    .gap(px(6.))
+                    .gap_2()
                     .child(
                         v_flex()
                             .relative()
                             .w_full()
                             .min_h_0()
                             .when(fills_container, |this| this.flex_1())
+                            .pt_1()
                             .pr_2p5()
                             .child(self.message_editor.clone())
                             .when(has_messages, |this| {
@@ -5680,7 +5683,7 @@ impl ThreadView {
                 IconName::Send
             };
             IconButton::new("send-message", send_icon)
-                .style(ButtonStyle::Transparent)
+                .style(ButtonStyle::Filled)
                 .map(|this| {
                     if is_editor_empty && !is_generating {
                         this.disabled(true).icon_color(Color::Muted)
@@ -6437,11 +6440,11 @@ impl ThreadView {
                         if is_first_indented {
                             this.pt_0p5()
                         } else {
-                            this.pt(px(10.))
+                            this.pt_2()
                         }
                     })
-                    .pb(px(10.))
-                    .px(px(16.))
+                    .pb_3()
+                    .px_2()
                     .gap_1p5()
                     .w_full()
                     .when(can_restore_checkpoint && has_checkpoint_button, |this| {
@@ -6468,9 +6471,9 @@ impl ThreadView {
                             .relative()
                             .child(
                                 div()
-                                    .py(px(8.))
-                                    .px(px(10.))
-                                    .rounded(px(12.))
+                                    .py_3()
+                                    .px_2()
+                                    .rounded_md()
                                     .bg(cx.theme().colors().editor_background)
                                     .border_1()
                                     .when(is_indented, |this| {
@@ -7773,6 +7776,11 @@ impl ThreadView {
                             .gap_1p5()
                             .overflow_hidden()
                             .child(
+                                Icon::new(IconName::ToolThink)
+                                    .size(IconSize::Small)
+                                    .color(Color::Muted),
+                            )
+                            .child(
                                 div()
                                     .text_size(self.tool_name_font_size())
                                     .text_color(cx.theme().colors().text_muted)
@@ -7802,7 +7810,10 @@ impl ThreadView {
                         .child(
                             div()
                                 .id(("thinking-content", chunk_ix))
-                                .pl(px(16.))
+                                .ml_1p5()
+                                .pl_3p5()
+                                .border_l_1()
+                                .border_color(self.tool_card_border_color(cx))
                                 .when(is_constrained, |this| this.max_h_64())
                                 .when_some(scroll_handle, |this, scroll_handle| {
                                     this.track_scroll(&scroll_handle)
@@ -8752,7 +8763,7 @@ impl ThreadView {
                             .justify_between()
                             .when(use_card_layout, |this| {
                                 this.p_0p5()
-                                    .rounded_t(px(12.))
+                                    .rounded_t(rems_from_px(5_f32))
                                     .bg(self.tool_card_header_bg(cx))
                             })
                             .child(self.render_tool_call_label(
@@ -8916,7 +8927,7 @@ impl ThreadView {
                     this
                 } else if use_card_layout {
                     this.my_1p5()
-                        .rounded(px(12.))
+                        .rounded_md()
                         .border_1()
                         .when(failed_or_canceled, |this| this.border_dashed())
                         .border_color(self.tool_card_border_color(cx))
@@ -10613,11 +10624,12 @@ impl ThreadView {
                     cx,
                 )
             } else {
-                let mut markdown_style = MarkdownStyle::themed(MarkdownFont::Agent, window, cx);
-                markdown_style.base_text_style.line_height =
-                    fork_ui::agent_body_line_height().into();
-                self.render_markdown(markdown.clone(), markdown_style, cx)
-                    .into_any()
+                self.render_markdown(
+                    markdown.clone(),
+                    MarkdownStyle::themed(MarkdownFont::Agent, window, cx),
+                    cx,
+                )
+                .into_any()
             }
         } else if let Some((resource, _)) = content.embedded_resource() {
             if tool_call.is_some() {
@@ -11431,7 +11443,7 @@ impl ThreadView {
     }
 
     fn tool_name_font_size(&self) -> Rems {
-        rems_from_px(14_f32)
+        rems_from_px(13_f32)
     }
 
     fn provider_by_name(name: &SharedString, cx: &App) -> Option<Arc<dyn LanguageModelProvider>> {

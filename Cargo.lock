@@ -488,7 +488,6 @@ dependencies = [
  "extension_host",
  "feature_flags",
  "file_icons",
- "fork_ui",
  "fs",
  "futures 0.3.34",
  "fuzzy",

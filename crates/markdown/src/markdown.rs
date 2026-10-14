@@ -133,7 +133,6 @@ pub struct MarkdownStyle {
     pub prevent_mouse_interaction: bool,
     pub table_columns_min_size: bool,
     pub soft_break_as_hard_break: bool,
-    pub flat_tables: bool,
 }
 
 impl Default for MarkdownStyle {
@@ -163,7 +162,6 @@ impl Default for MarkdownStyle {
             prevent_mouse_interaction: false,
             table_columns_min_size: false,
             soft_break_as_hard_break: false,
-            flat_tables: false,
         }
     }
 }
@@ -218,7 +216,8 @@ impl MarkdownStyle {
         };
         let code_font_family = match font {
             MarkdownFont::Preview => theme_settings.markdown_preview_code_font_family().clone(),
-            MarkdownFont::Agent | MarkdownFont::Editor => theme_settings.buffer_font.family.clone(),
+            MarkdownFont::Agent => theme_settings.agent_buffer_font_family().clone(),
+            MarkdownFont::Editor => theme_settings.buffer_font.family.clone(),
         };
 
         let mut text_style = window.text_style();
@@ -311,53 +310,31 @@ impl MarkdownStyle {
             heading_level_styles: matches!(font, MarkdownFont::Agent).then_some(
                 HeadingLevelStyles {
                     h1: Some(TextStyleRefinement {
-                        font_size: Some(rems(1.466).into()),
-                        font_weight: Some(FontWeight::SEMIBOLD),
+                        font_size: Some(rems(1.15).into()),
                         ..Default::default()
                     }),
                     h2: Some(TextStyleRefinement {
-                        font_size: Some(rems(1.333).into()),
-                        font_weight: Some(FontWeight::SEMIBOLD),
+                        font_size: Some(rems(1.1).into()),
                         ..Default::default()
                     }),
                     h3: Some(TextStyleRefinement {
-                        font_size: Some(rems(1.133).into()),
-                        font_weight: Some(FontWeight::SEMIBOLD),
+                        font_size: Some(rems(1.05).into()),
                         ..Default::default()
                     }),
                     h4: Some(TextStyleRefinement {
                         font_size: Some(rems(1.).into()),
-                        font_weight: Some(FontWeight::SEMIBOLD),
                         ..Default::default()
                     }),
                     h5: Some(TextStyleRefinement {
-                        font_size: Some(rems(0.866).into()),
-                        font_weight: Some(FontWeight::SEMIBOLD),
+                        font_size: Some(rems(0.95).into()),
                         ..Default::default()
                     }),
                     h6: Some(TextStyleRefinement {
-                        font_size: Some(rems(0.8).into()),
-                        font_weight: Some(FontWeight::SEMIBOLD),
+                        font_size: Some(rems(0.875).into()),
                         ..Default::default()
                     }),
                 },
             ),
-            flat_tables: matches!(font, MarkdownFont::Agent),
-            paragraph_spacing: if matches!(font, MarkdownFont::Agent) {
-                px(10.)
-            } else {
-                px(8.)
-            },
-            list_spacing: if matches!(font, MarkdownFont::Agent) {
-                px(10.)
-            } else {
-                px(0.)
-            },
-            table_cell_padding: if matches!(font, MarkdownFont::Agent) {
-                point(px(10.), px(6.))
-            } else {
-                point(px(4.), px(2.))
-            },
             ..Default::default()
         };
 
@@ -2134,9 +2111,8 @@ impl MarkdownElement {
         let block_div = div()
             .pl_4()
             .mb(self.style.paragraph_spacing)
-            .when(!self.style.flat_tables, |this| {
-                this.border_l_4().border_color(border_color)
-            });
+            .border_l_4()
+            .border_color(border_color);
         let block_div = match header {
             Some(header) => block_div.child(header),
             None => block_div,
@@ -3026,11 +3002,9 @@ impl Element for MarkdownElement {
                                         this.grid_cols_max_content(column_count as u16)
                                     })
                                     .mb_2()
-                                    .when(!self.style.flat_tables, |this| {
-                                        this.border(px(1.5))
-                                            .border_color(cx.theme().colors().border)
-                                            .rounded_sm()
-                                    })
+                                    .border(px(1.5))
+                                    .border_color(cx.theme().colors().border)
+                                    .rounded_sm()
                                     .restrict_scroll_to_axis()
                                     .custom_scrollbars(
                                         Scrollbars::new(ScrollAxes::Horizontal)
@@ -3074,23 +3048,17 @@ impl Element for MarkdownElement {
                                 .flex()
                                 .flex_col()
                                 .h_full()
-                                .when(!self.style.flat_tables && col_index > 0, |this| {
-                                    this.border_l_1()
-                                })
-                                .when(!self.style.flat_tables && row_index > 0, |this| {
-                                    this.border_t_1()
-                                })
-                                .when(self.style.flat_tables, |this| this.border_b_1())
+                                .when(col_index > 0, |this| this.border_l_1())
+                                .when(row_index > 0, |this| this.border_t_1())
                                 .border_color(cx.theme().colors().border)
                                 .px(self.style.table_cell_padding.x)
                                 .py(self.style.table_cell_padding.y)
-                                .when(!self.style.flat_tables && is_header, |this| {
+                                .when(is_header, |this| {
                                     this.bg(cx.theme().colors().title_bar_background)
                                 })
-                                .when(
-                                    !self.style.flat_tables && !is_header && row_index % 2 == 1,
-                                    |this| this.bg(cx.theme().colors().panel_background),
-                                );
+                                .when(!is_header && row_index % 2 == 1, |this| {
+                                    this.bg(cx.theme().colors().panel_background)
+                                });
 
                             cell_div = match alignment {
                                 Some(Alignment::Center) => cell_div.items_center(),

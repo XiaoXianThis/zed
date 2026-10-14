@@ -94,7 +94,7 @@ use text::OffsetRangeExt;
 use theme_settings::ThemeSettings;
 use ui::{
     ContextMenu, ContextMenuEntry, GradientFade, IconButton, KeyBinding, PopoverMenu,
-    PopoverMenuHandle, ProjectEmptyState, Tooltip, prelude::*, utils::WithRemSize,
+    PopoverMenuHandle, ProjectEmptyState, Tab, Tooltip, prelude::*, utils::WithRemSize,
 };
 use util::ResultExt as _;
 use workspace::{
@@ -1552,7 +1552,7 @@ impl AgentPanel {
             selected_agent: Agent::default(),
             _thread_view_subscription: None,
             _active_thread_focus_subscription: None,
-            new_user_onboarding_upsell_dismissed: AtomicBool::new(true),
+            new_user_onboarding_upsell_dismissed: AtomicBool::new(OnboardingUpsell::dismissed(cx)),
             _base_view_observation: None,
             _draft_editor_observation: None,
             _active_draft_reclaim_observation: None,
@@ -5837,61 +5837,6 @@ impl AgentPanel {
         })
     }
 
-    fn render_thread_tabs(&self, window: &mut Window, cx: &mut Context<Self>) -> AnyElement {
-        let Some(active_view) = self.active_conversation_view().cloned() else {
-            return div().into_any_element();
-        };
-        let active_thread_id = active_view.read(cx).thread_id;
-        let mut tabs: Vec<(ThreadId, Entity<ConversationView>)> = self
-            .retained_threads
-            .iter()
-            .map(|(thread_id, conversation_view)| (*thread_id, conversation_view.clone()))
-            .collect();
-        tabs.push((active_thread_id, active_view));
-        if let Some(store) = ThreadMetadataStore::try_global(cx) {
-            let store = store.read(cx);
-            tabs.sort_by_key(|(thread_id, _)| {
-                store
-                    .entry(*thread_id)
-                    .and_then(|metadata| metadata.created_at)
-            });
-        }
-
-        let mut children = Vec::with_capacity(tabs.len());
-        for (thread_id, conversation_view) in tabs {
-            let selected = thread_id == active_thread_id;
-            let label = if selected && self.active_thread_has_messages(cx) {
-                self.render_title_view(window, cx)
-            } else {
-                Label::new(conversation_view.read(cx).title(cx))
-                    .color(if selected {
-                        Color::Default
-                    } else {
-                        Color::Muted
-                    })
-                    .truncate()
-                    .into_any_element()
-            };
-            children.push(
-                fork_ui::agent_thread_tab(
-                    SharedString::from(format!("agent-thread-tab-{thread_id:?}")),
-                    selected,
-                    cx,
-                )
-                .child(label)
-                .when(!selected, |this| {
-                    this.on_click(cx.listener(move |this, _, window, cx| {
-                        this.activate_retained_thread(thread_id, true, window, cx);
-                    }))
-                })
-                .into_any_element(),
-            );
-        }
-        fork_ui::agent_tab_strip()
-            .children(children)
-            .into_any_element()
-    }
-
     fn render_toolbar(&self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let agent_server_store = self.project.read(cx).agent_server_store().clone();
 
@@ -6167,14 +6112,18 @@ impl AgentPanel {
             ToolbarMode::EmptyThread
         };
 
-        let hide_panel_button = IconButton::new("hide-panel", IconName::Dash)
+        let is_full_screen = self.is_zoomed(window, cx);
+        let (icon_name, tooltip_text) = if is_full_screen {
+            (IconName::Minimize, "Disable Full Screen")
+        } else {
+            (IconName::Maximize, "Enable Full Screen")
+        };
+        let full_screen_button = IconButton::new("toggle-full-screen", icon_name)
             .icon_size(IconSize::Small)
-            .tooltip(Tooltip::text("Hide Panel"))
-            .on_click(cx.listener(|this, _, _, cx| {
-                if this.zoomed {
-                    cx.emit(PanelEvent::ZoomOut);
-                }
-                cx.emit(PanelEvent::Close);
+            .toggle_state(is_full_screen)
+            .tooltip(move |_, cx| Tooltip::for_action(tooltip_text, &ToggleZoom, cx))
+            .on_click(cx.listener(move |this, _, window, cx| {
+                this.toggle_zoom(&ToggleZoom, window, cx);
             }));
 
         let max_content_width = AgentSettings::get_global(cx).max_content_width;
@@ -6233,16 +6182,10 @@ impl AgentPanel {
                         .gap(DynamicSpacing::Base04.rems(cx))
                         .pl(DynamicSpacing::Base04.rems(cx))
                         .child(selected_agent.into_any_element())
-                        .child(
-                            if matches!(self.visible_surface(), VisibleSurface::AgentThread(_)) {
-                                self.render_thread_tabs(window, cx)
-                            } else {
-                                match empty_thread_title {
-                                    Some(title) => title,
-                                    None => self.render_title_view(window, cx),
-                                }
-                            },
-                        ),
+                        .child(match empty_thread_title {
+                            Some(title) => title,
+                            None => self.render_title_view(window, cx),
+                        }),
                 )
                 .child(
                     h_flex()
@@ -6252,15 +6195,15 @@ impl AgentPanel {
                         .gap_1()
                         .children(sandbox_status)
                         .when(can_create_entries, |this| this.child(new_thread_menu))
-                        .child(self.render_panel_options_menu(window, cx))
-                        .child(hide_panel_button),
+                        .child(full_screen_button)
+                        .child(self.render_panel_options_menu(window, cx)),
                 )
                 .into_any_element()
         };
 
         h_flex()
             .id("agent-panel-toolbar")
-            .h(fork_ui::agent_tab_strip_height())
+            .h(Tab::container_height(cx))
             .flex_shrink_0()
             .max_w_full()
             .bg(cx.theme().colors().tab_bar_background)
