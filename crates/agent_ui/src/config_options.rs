@@ -280,7 +280,7 @@ impl Render for ConfigOptionsView {
 
         h_flex()
             .min_w_0()
-            .flex_wrap()
+            .overflow_hidden()
             .gap_1()
             .children(self.selectors.iter().cloned())
             .into_any_element()
@@ -436,6 +436,7 @@ impl ConfigOptionSelector {
             display_name,
         )
         .label_size(LabelSize::Small)
+        .truncate(true)
         .color(Color::Muted)
         .end_icon(Icon::new(icon).size(IconSize::XSmall).color(Color::Muted))
         .disabled(self.setting_value)
