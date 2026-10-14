@@ -2739,6 +2739,7 @@ impl Workspace {
                 return Some((flex / total_flex * workspace_width).max(RESIZE_HANDLE_SIZE));
             } else {
                 let opposite_fixed = opposite
+                    .filter(|_| self.opposite_fixed_dock_reserves_width(position, cx))
                     .map(|(panel, s)| s.size.unwrap_or_else(|| panel.default_size(window, cx)))
                     .unwrap_or_default();
                 let available = (workspace_width - opposite_fixed).max(RESIZE_HANDLE_SIZE);
@@ -2778,6 +2779,7 @@ impl Workspace {
             Some((size * (center_column_count + opposite_flex) / (workspace_width - size)).max(0.0))
         } else {
             let opposite_width = opposite
+                .filter(|_| self.opposite_fixed_dock_reserves_width(position, cx))
                 .map(|(panel, s)| s.size.unwrap_or_else(|| panel.default_size(window, cx)))
                 .unwrap_or_default();
             let available = (workspace_width - opposite_width).max(RESIZE_HANDLE_SIZE);
@@ -2807,6 +2809,14 @@ impl Workspace {
             size_state.flex = self.default_dock_flex(opposite_position);
         }
         Some((panel.clone(), size_state))
+    }
+
+    fn opposite_fixed_dock_reserves_width(&self, position: DockPosition, cx: &App) -> bool {
+        match WorkspaceSettings::get_global(cx).bottom_dock_layout {
+            BottomDockLayout::LeftAligned => position == DockPosition::Left,
+            BottomDockLayout::RightAligned => position == DockPosition::Right,
+            BottomDockLayout::Full | BottomDockLayout::Contained => true,
+        }
     }
 
     fn center_full_height_column_count(&self) -> f32 {
@@ -8718,6 +8728,7 @@ impl Workspace {
 
         let mut container = div()
             .id(dock_element_id)
+            .debug_selector(move || format!("{dock_element_id}-debug"))
             .when(dock_is_open, |this| {
                 this.role(gpui::Role::Complementary)
                     .aria_label(dock_label)
@@ -15902,6 +15913,72 @@ mod tests {
             let dock = workspace.right_dock().read(cx);
             assert_eq!(workspace.dock_size(&dock, window, cx).unwrap(), px(800.));
         });
+    }
+
+    #[gpui::test]
+    async fn test_flexible_right_dock_follows_resize_with_open_left_dock(
+        cx: &mut gpui::TestAppContext,
+    ) {
+        init_test(cx);
+        let fs = FakeFs::new(cx.executor());
+        let project = Project::test(fs, [], cx).await;
+        let (multi_workspace, cx) =
+            cx.add_window_view(|window, cx| MultiWorkspace::test_new(project, window, cx));
+        let workspace = multi_workspace.read_with(cx, |mw, _| mw.workspace().clone());
+        workspace.update(cx, |workspace, _cx| workspace.set_random_database_id());
+        workspace.update_in(cx, |workspace, window, cx| {
+            let right_panel = cx.new(|cx| TestPanel::new_flexible(DockPosition::Right, 100, cx));
+            workspace.add_panel(right_panel.clone(), window, cx);
+            workspace.toggle_dock(DockPosition::Right, window, cx);
+            workspace.right_dock().clone().update(cx, |dock, cx| {
+                dock.set_panel_size_state(
+                    &right_panel,
+                    dock::PanelSizeState {
+                        size: None,
+                        flex: Some(1.0),
+                    },
+                    cx,
+                );
+            });
+            let left_panel = cx.new(|cx| TestPanel::new(DockPosition::Left, 50, cx));
+            workspace.add_panel(left_panel, window, cx);
+            workspace.toggle_dock(DockPosition::Left, window, cx);
+            let item = cx.new(|cx| {
+                TestItem::new(cx).with_project_items(&[TestProjectItem::new(1, "one.txt", cx)])
+            });
+            workspace.add_item_to_active_pane(Box::new(item), None, true, window, cx);
+        });
+        cx.simulate_resize(size(px(1600.), px(900.)));
+        cx.run_until_parked();
+
+        for split_center in [false, true] {
+            if split_center {
+                workspace.update_in(cx, |workspace, window, cx| {
+                    let active_pane = workspace.active_pane().clone();
+                    workspace.split_pane(active_pane, SplitDirection::Right, window, cx);
+                });
+                cx.run_until_parked();
+            }
+            for requested in [px(300.), px(600.)] {
+                workspace.update_in(cx, |workspace, window, cx| {
+                    workspace.resize_right_dock(requested, window, cx);
+                });
+                cx.run_until_parked();
+                let dock_bounds = cx
+                    .debug_bounds("right-dock-debug")
+                    .expect("right dock should render");
+                let workspace_bounds = workspace.read_with(cx, |workspace, _| workspace.bounds);
+                assert_eq!(
+                    dock_bounds.size.width, requested,
+                    "split_center={split_center}"
+                );
+                assert_eq!(
+                    dock_bounds.origin.x,
+                    workspace_bounds.right() - requested,
+                    "split_center={split_center}"
+                );
+            }
+        }
     }
 
     #[gpui::test]
