@@ -122,6 +122,7 @@ impl ActivityStrip {
         let bottom = bottom_slots
             .iter()
             .filter_map(|slot| (self.panel_item)(slot, window, cx))
+            .collect();
         (top, bottom, self.footer)
     }
 
@@ -139,7 +140,6 @@ impl RenderOnce for ActivityStrip {
     fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
         let top_inset = self.top_inset;
         let (top, bottom, footer) = self.collect_items(window, cx);
-            .collect();
         v_flex()
             .h_full()
             .w(strip_width())
