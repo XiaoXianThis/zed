@@ -147,6 +147,7 @@ git config rerere.enabled true
 | 5 | `crates/agent_ui/src/message_editor.rs` → `MessageEditor::render` 编辑器背景改为 `transparent_black` | 输入框底色由外层框提供 | fork(ui): restyle agent panel to match Cursor | 人工判断 | 已实施 |
 | 5 | `crates/agent_ui/Cargo.toml` 增加 `fork_ui` 依赖（`Cargo.lock` 同步） | 引入样式 token | fork(ui): restyle agent panel to match Cursor | fork | 已实施 |
 | 3 | `assets/settings/default.json` → `toolbar.breadcrumbs`（改为 false）、`toolbar.quick_actions`（改为 false） | 去掉编辑器顶部工具栏（面包屑路径、搜索/选择/过滤等快捷图标） | fork(settings): hide editor toolbar breadcrumbs and quick actions | fork | 已实施 |
+| 5 | `crates/agent_ui/src/agent_panel.rs` → `AgentPanel::new` 中 `new_user_onboarding_upsell_dismissed` 初始值改为 `true` | 去掉 Agent 面板顶部的 "Welcome to Zed AI" 引导卡片（`ai_onboarding` 实现保留，`ResetTrialUpsell` 仍可恢复） | fork(ui): hide agent panel welcome onboarding | 人工判断 | 已实施 |
 
 ### 待确认事项（实施前需要核实）
 - Agent 面板未完全还原：工具调用行（非卡片形式）、助手消息正文、模式/模型胶囊按钮、消息底部操作区尚未逐项对照 Cursor 调整；需要在有已连接 Agent 的会话中做一次像素级对比。
