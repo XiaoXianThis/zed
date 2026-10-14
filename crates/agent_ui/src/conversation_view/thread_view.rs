@@ -4637,6 +4637,9 @@ impl ThreadView {
                             .when(fills_container, |this| this.flex_1())
                             .pt_1()
                             .pr_2p5()
+                            .when(!has_messages, |this| {
+                                this.min_h(fork_ui::agent_composer_min_editor_height())
+                            })
                             .child(self.message_editor.clone())
                             .when(has_messages, |this| {
                                 this.child(

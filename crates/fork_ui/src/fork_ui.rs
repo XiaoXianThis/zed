@@ -172,6 +172,10 @@ pub fn agent_body_line_height() -> Pixels {
     px(22.)
 }
 
+pub fn agent_composer_min_editor_height() -> Pixels {
+    px(44.)
+}
+
 pub fn agent_tab_separator() -> Hsla {
     cursor_color(0x2b2b2b, 1.)
 }
