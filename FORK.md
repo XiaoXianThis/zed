@@ -146,6 +146,7 @@ git config rerere.enabled true
 | 5 | `crates/agent_ui/src/conversation_view/thread_view.rs` → `render_message_editor`（输入框外层改用 `agent_composer_frame`，空状态贴底）、`render_entry`（用户消息 12px 圆角与底色）、`render_thinking_block`（去掉图标与左侧竖线）、`tool_card_border_color` | 输入框、用户消息、思考块、工具卡片边框对齐 Cursor | fork(ui): restyle agent panel to match Cursor | 人工判断 | 已实施 |
 | 5 | `crates/agent_ui/src/message_editor.rs` → `MessageEditor::render` 编辑器背景改为 `transparent_black` | 输入框底色由外层框提供 | fork(ui): restyle agent panel to match Cursor | 人工判断 | 已实施 |
 | 5 | `crates/agent_ui/Cargo.toml` 增加 `fork_ui` 依赖（`Cargo.lock` 同步） | 引入样式 token | fork(ui): restyle agent panel to match Cursor | fork | 已实施 |
+| 3 | `assets/settings/default.json` → `toolbar.breadcrumbs`（改为 false）、`toolbar.quick_actions`（改为 false） | 去掉编辑器顶部工具栏（面包屑路径、搜索/选择/过滤等快捷图标） | fork(settings): hide editor toolbar breadcrumbs and quick actions | fork | 已实施 |
 
 ### 待确认事项（实施前需要核实）
 - Agent 面板未完全还原：工具调用行（非卡片形式）、助手消息正文、模式/模型胶囊按钮、消息底部操作区尚未逐项对照 Cursor 调整；需要在有已连接 Agent 的会话中做一次像素级对比。
