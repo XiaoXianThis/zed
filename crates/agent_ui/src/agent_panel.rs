@@ -1552,7 +1552,7 @@ impl AgentPanel {
             selected_agent: Agent::default(),
             _thread_view_subscription: None,
             _active_thread_focus_subscription: None,
-            new_user_onboarding_upsell_dismissed: AtomicBool::new(OnboardingUpsell::dismissed(cx)),
+            new_user_onboarding_upsell_dismissed: AtomicBool::new(true),
             _base_view_observation: None,
             _draft_editor_observation: None,
             _active_draft_reclaim_observation: None,
@@ -6166,18 +6166,14 @@ impl AgentPanel {
             ToolbarMode::EmptyThread
         };
 
-        let is_full_screen = self.is_zoomed(window, cx);
-        let (icon_name, tooltip_text) = if is_full_screen {
-            (IconName::Minimize, "Disable Full Screen")
-        } else {
-            (IconName::Maximize, "Enable Full Screen")
-        };
-        let full_screen_button = IconButton::new("toggle-full-screen", icon_name)
+        let hide_panel_button = IconButton::new("hide-panel", IconName::Dash)
             .icon_size(IconSize::Small)
-            .toggle_state(is_full_screen)
-            .tooltip(move |_, cx| Tooltip::for_action(tooltip_text, &ToggleZoom, cx))
-            .on_click(cx.listener(move |this, _, window, cx| {
-                this.toggle_zoom(&ToggleZoom, window, cx);
+            .tooltip(Tooltip::text("Hide Panel"))
+            .on_click(cx.listener(|this, _, _, cx| {
+                if this.zoomed {
+                    cx.emit(PanelEvent::ZoomOut);
+                }
+                cx.emit(PanelEvent::Close);
             }));
 
         let max_content_width = AgentSettings::get_global(cx).max_content_width;
@@ -6255,8 +6251,8 @@ impl AgentPanel {
                         .gap_1()
                         .children(sandbox_status)
                         .when(can_create_entries, |this| this.child(new_thread_menu))
-                        .child(full_screen_button)
-                        .child(self.render_panel_options_menu(window, cx)),
+                        .child(self.render_panel_options_menu(window, cx))
+                        .child(hide_panel_button),
                 )
                 .into_any_element()
         };
