@@ -1,5 +1,6 @@
 use gpui::{
-    Action, AnyView, App, Div, ElementId, Pixels, SharedString, Stateful, Window, prelude::*,
+    Action, AnyView, App, Div, ElementId, Hsla, Pixels, SharedString, Stateful, Window,
+    prelude::*,
 };
 use ui::{Tab, Tooltip, prelude::*};
 
@@ -191,7 +192,11 @@ pub fn agent_tab_strip_height() -> Pixels {
 }
 
 pub fn agent_body_line_height() -> Pixels {
-    px(22.)
+    px(24.)
+}
+
+pub fn agent_body_text_color(cx: &App) -> Hsla {
+    cx.theme().colors().text.opacity(0.85)
 }
 
 pub fn agent_composer_frame(cx: &App) -> Div {
