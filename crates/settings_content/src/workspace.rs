@@ -26,7 +26,7 @@ pub struct WorkspaceSettingsContent {
     /// Whether to show the left and right activity strips. When disabled, their
     /// panel buttons are shown in the title bar instead.
     ///
-    /// Default: true
+    /// Default: false
     pub activity_strips: Option<bool>,
     /// Direction to split horizontally.
     ///
