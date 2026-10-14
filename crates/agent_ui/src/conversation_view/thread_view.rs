@@ -10613,12 +10613,11 @@ impl ThreadView {
                     cx,
                 )
             } else {
-                self.render_markdown(
-                    markdown.clone(),
-                    MarkdownStyle::themed(MarkdownFont::Agent, window, cx),
-                    cx,
-                )
-                .into_any()
+                let mut markdown_style = MarkdownStyle::themed(MarkdownFont::Agent, window, cx);
+                markdown_style.base_text_style.line_height =
+                    fork_ui::agent_body_line_height().into();
+                self.render_markdown(markdown.clone(), markdown_style, cx)
+                    .into_any()
             }
         } else if let Some((resource, _)) = content.embedded_resource() {
             if tool_call.is_some() {
