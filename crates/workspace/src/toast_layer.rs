@@ -237,7 +237,8 @@ impl Render for ToastLayer {
                 .bottom(px(0.))
                 .flex()
                 .flex_col()
-                .items_center()
+                .items_start()
+                .pl_2()
                 .track_focus(&active_toast.focus_handle)
                 .child(
                     h_flex()
