@@ -118,6 +118,7 @@ impl Render for AgentModelSelector {
             self.selector.clone(),
             Button::new("active-model", model_name)
                 .label_size(LabelSize::Small)
+                .truncate(true)
                 .color(color)
                 .when_some(provider_icon, |this, icon| {
                     this.start_icon(

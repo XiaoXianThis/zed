@@ -4678,12 +4678,12 @@ impl ThreadView {
                             .w_full()
                             .min_w_0()
                             .flex_none()
-                            .flex_wrap()
+                            .overflow_hidden()
                             .justify_between()
                             .child(
                                 h_flex()
                                     .min_w_0()
-                                    .flex_wrap()
+                                    .overflow_hidden()
                                     .gap_0p5()
                                     .child(self.render_add_context_button(cx))
                                     .child(self.render_follow_toggle(cx))
@@ -4693,7 +4693,7 @@ impl ThreadView {
                             .child(
                                 h_flex()
                                     .min_w_0()
-                                    .flex_wrap()
+                                    .overflow_hidden()
                                     .gap_1()
                                     .children(self.render_token_usage(cx))
                                     .children(self.profile_selector.clone())

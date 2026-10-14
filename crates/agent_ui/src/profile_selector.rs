@@ -214,6 +214,7 @@ impl Render for ProfileSelector {
 
         let trigger_button = Button::new("profile-selector", selected_profile)
             .label_size(LabelSize::Small)
+            .truncate(true)
             .color(Color::Muted)
             .when(show_warning, |this| {
                 this.start_icon(

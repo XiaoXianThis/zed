@@ -150,6 +150,7 @@ impl Render for ModeSelector {
 
         let trigger_button = Button::new("mode-selector-trigger", current_mode_name)
             .label_size(LabelSize::Small)
+            .truncate(true)
             .color(Color::Muted)
             .end_icon(Icon::new(icon).size(IconSize::XSmall).color(Color::Muted))
             .disabled(self.setting_mode);
